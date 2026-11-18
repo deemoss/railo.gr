@@ -1,17 +1,106 @@
 <!doctype html>
-<html lang="el">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Railo</title>
+  <meta name="description" content="Railo — overhead rail trolley for poultry houses.">
   <style>
-    html,body{height:100%;margin:0}
-    body{display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;background:#fff;color:#222}
-    @media (prefers-color-scheme:dark){body{background:#111;color:#eee}}
-    h1{font-weight:600;letter-spacing:.02em}
+    :root{
+      --bg:#ffffff; --fg:#1d1d1f; --muted:#6e6e73; --line:#e3e3e6;
+      --field:#f5f5f7; --accent:#1d1d1f; --accent-fg:#ffffff;
+    }
+    @media (prefers-color-scheme:dark){
+      :root{
+        --bg:#0f0f10; --fg:#f2f2f2; --muted:#9a9aa0; --line:#2a2a2d;
+        --field:#1a1a1c; --accent:#f2f2f2; --accent-fg:#0f0f10;
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{
+      background:var(--bg); color:var(--fg);
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      display:flex; flex-direction:column; align-items:center;
+      padding:72px 16px 56px; gap:56px; min-height:100vh;
+    }
+    header{text-align:center}
+    h1{font-weight:600; letter-spacing:.02em; font-size:clamp(2.4rem,7vw,3.4rem); margin:0}
+    .tag{color:var(--muted); margin:8px 0 0; font-size:1rem}
+
+    .video{
+      width:min(360px,100%); aspect-ratio:9/16;
+      border-radius:22px; overflow:hidden;
+      background:#000; box-shadow:0 20px 50px rgba(0,0,0,.18);
+    }
+    .video iframe{width:100%; height:100%; border:0; display:block}
+
+    section.contact{width:min(440px,100%)}
+    h2{font-weight:600; font-size:1.25rem; margin:0 0 4px; text-align:center}
+    .sub{color:var(--muted); text-align:center; margin:0 0 24px; font-size:.95rem}
+    form{display:flex; flex-direction:column; gap:12px}
+    input,textarea{
+      font:inherit; color:var(--fg); background:var(--field);
+      border:1px solid transparent; border-radius:12px;
+      padding:13px 14px; width:100%; outline:none;
+      transition:border-color .15s, background .15s;
+    }
+    input:focus,textarea:focus{border-color:var(--line); background:var(--bg)}
+    textarea{min-height:130px; resize:vertical}
+    button{
+      font:inherit; font-weight:600; cursor:pointer;
+      background:var(--accent); color:var(--accent-fg);
+      border:0; border-radius:12px; padding:13px; margin-top:4px;
+      transition:opacity .15s;
+    }
+    button:hover{opacity:.85}
+    .hp{position:absolute; left:-9999px}
+    .sent{display:none; text-align:center; color:var(--muted); padding:24px 0}
+    .is-sent .sent{display:block}
+    .is-sent form{display:none}
+
+    footer{color:var(--muted); font-size:.85rem; margin-top:auto}
   </style>
 </head>
 <body>
-  <h1>Railo</h1>
+  <header>
+    <h1>Railo</h1>
+    <p class="tag">Overhead rail trolley for poultry houses</p>
+  </header>
+
+  <div class="video">
+    <iframe
+      src="https://www.youtube-nocookie.com/embed/x0T1vV2Z3_A?rel=0&modestbranding=1&playsinline=1"
+      title="Railo Demo" loading="lazy"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen></iframe>
+  </div>
+
+  <section class="contact" id="contact">
+    <h2>Get in touch</h2>
+    <p class="sub">We'll reply to your email.</p>
+    <form action="https://formsubmit.co/hello@railo.gr" method="POST">
+      <input type="text" name="name" placeholder="Name" required autocomplete="name">
+      <input type="email" name="email" placeholder="Email" required autocomplete="email">
+      <textarea name="message" placeholder="Message" required></textarea>
+      <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <input type="hidden" name="_subject" value="New message from railo.gr">
+      <input type="hidden" name="_captcha" value="true">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_next" value="https://railo.gr/?sent=1#contact">
+      <button type="submit">Send</button>
+    </form>
+    <p class="sent">Thanks — your message has been sent.</p>
+  </section>
+
+  <footer>© <span id="y"></span> Railo</footer>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+    if (new URLSearchParams(location.search).has('sent')) {
+      document.getElementById('contact').classList.add('is-sent');
+    }
+  </script>
 </body>
 </html>
