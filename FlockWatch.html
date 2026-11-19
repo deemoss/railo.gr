@@ -168,8 +168,8 @@ svg text{font-family:inherit}
       </div>
       <div class="hmrow" id="house">
         <div class="hmcol"><svg id="mapMain"></svg><h3 id="mainT"></h3></div>
-        <div class="hmcol"><svg id="miniYou"></svg><h3 data-t="miniYou"></h3></div>
-        <div class="hmcol"><svg id="miniPeer"></svg><h3 data-t="miniPeer"></h3></div>
+        <div class="hmcol"><svg id="mapTyp"></svg><h3 id="typT"></h3></div>
+        <div class="hmcol"><svg id="mapDiff"></svg><h3 id="diffT"></h3></div>
       </div>
       <div class="legend" id="hmLegend" style="justify-content:center"></div>
     </div>
@@ -262,7 +262,9 @@ en:{
  thrNote:"Warning thresholds in this demo are illustrative (e.g. deaths above 0.5% a day for 2 days, or water use down more than 5%), based on published Dutch research on avian influenza. They are configurable — confirm with your vet.",
  h2:"Where are birds dying?",q2:"Every bird Railo picks up is logged with its exact position in the house (15 × 120 m).",
  wToday:"Today",wWeek:"Last 7 days",wFlock:"Whole flock",
- mapMain:"Your house",miniYou:"Your pattern (last 7 days)",miniPeer:"Typical pattern in similar houses",
+ mapMain:"Your house",mapTyp:"Usual in similar houses",mapDiff:"Difference from normal",
+ lgScale:(m)=>`${m} birds per 2 × 2 m`,lgLess:"fewer than usual",lgMore:"more than usual",
+ tipYou:(n,e,m,d)=>`${n} bird${n==1?"":"s"} (usual ${e}) · ${m} m from fans · day ${d}`,tipTyp:(e,m)=>`usual: ${e} birds · ${m} m from fans`,
  lgLow:"few",lgHigh:"many",lgDrink:"drinker lines",lgFeed:"feeder lines",lgRail:"Railo rail",
  fans:"Tunnel fans",pads:"Cooling pads",door:"Door",inlets:"side inlets",
  pNormal:"Evenly spread",pNormalD:"normal, no hotspot",
@@ -332,7 +334,9 @@ el:{
  thrNote:"Τα όρια προειδοποίησης σε αυτή την επίδειξη είναι ενδεικτικά (π.χ. θάνατοι πάνω από 0,5% την ημέρα για 2 ημέρες ή πτώση νερού πάνω από 5%), βάσει δημοσιευμένης ολλανδικής έρευνας για τη γρίπη των πτηνών. Ρυθμίζονται — επιβεβαιώστε με τον κτηνίατρό σας.",
  h2:"Πού πεθαίνουν τα πουλιά;",q2:"Κάθε πουλί που μαζεύει το Railo καταγράφεται με την ακριβή του θέση στον θάλαμο (15 × 120 m).",
  wToday:"Σήμερα",wWeek:"Τελευταίες 7 ημέρες",wFlock:"Όλο το σμήνος",
- mapMain:"Ο θάλαμός σας",miniYou:"Το δικό σας μοτίβο (7 ημέρες)",miniPeer:"Τυπικό μοτίβο σε παρόμοιους θαλάμους",
+ mapMain:"Ο θάλαμός σας",mapTyp:"Συνήθως σε παρόμοιους θαλάμους",mapDiff:"Διαφορά από το φυσιολογικό",
+ lgScale:(m)=>`${m} πουλιά ανά 2 × 2 m`,lgLess:"λιγότερα από το συνηθισμένο",lgMore:"περισσότερα από το συνηθισμένο",
+ tipYou:(n,e,m,d)=>`${n} πουλ${n==1?"ί":"ιά"} (συνήθως ${e}) · ${m} m από ανεμιστήρες · ημέρα ${d}`,tipTyp:(e,m)=>`συνήθως: ${e} πουλιά · ${m} m από ανεμιστήρες`,
  lgLow:"λίγα",lgHigh:"πολλά",lgDrink:"γραμμές ποτίστρας",lgFeed:"γραμμές ταΐστρας",lgRail:"ράγα Railo",
  fans:"Ανεμιστήρες",pads:"Δροσιστικά πάνελ",door:"Πόρτα",inlets:"πλευρικά ανοίγματα",
  pNormal:"Ομοιόμορφη κατανομή",pNormalD:"φυσιολογικό, χωρίς εστία",
@@ -545,9 +549,8 @@ function grid(ev,cell){
   ev.forEach(p=>{g[Math.min(ny-1,Math.floor(p[1]/cell))*nx+Math.min(nx-1,Math.floor(p[0]/cell))]++});
   return{g,nx,ny};
 }
-function drawHouse(svg,cell,G,max,winInfo,interactive,labels,rel,hPx){
+function drawHouse(svg,cell,G,colorFn,tipFn,labels,hPx){
   // vertical plan: door/pads at top, tunnel fans at bottom. House coords (x along length, y across) -> screen (W-y, x)
-  const mean=G.g.reduce((a,b)=>a+b,0)/G.g.length||1;
   svg.innerHTML="";
   const vx=labels?-11:-1.6,vy=-5.5,vw=(W+2.2)-vx,vh=(L+7)-vy;
   svg.setAttribute("viewBox",`${vx} ${vy} ${vw} ${vh}`);
@@ -557,15 +560,12 @@ function drawHouse(svg,cell,G,max,winInfo,interactive,labels,rel,hPx){
   const g=el("g",{transform:`matrix(0,1,-1,0,${W},0)`},svg);
   el("rect",{x:0,y:0,width:L,height:W,fill:css("--floor"),stroke:css("--wall"),"stroke-width":sw*2},g);
   for(let j=0;j<G.ny;j++)for(let i=0;i<G.nx;i++){
-    const cx=i*cell,v=G.g[j*G.nx+i],col=heat(rel?clamp((v/mean-0.6)/3,0,1):max?Math.sqrt(v/max):0);
-    if(!col&&!interactive)continue;
+    const k=j*G.nx+i,cx=i*cell,col=colorFn(k);
     const r=el("rect",{x:cx,y:j*cell,width:Math.min(cell,L-cx),height:Math.min(cell,W-j*cell),fill:col||"transparent"},g);
-    if(interactive){
-      const msg=()=>t("tip")(v,Math.max(0,Math.round(L-(cx+cell/2))),winInfo.a,winInfo.b);
-      r.addEventListener("mousemove",e=>showTip(e,msg()));
-      r.addEventListener("mouseleave",hideTip);
-      r.addEventListener("click",e=>{showTip(e,msg());setTimeout(hideTip,1800)});
-    }
+    const msg=()=>tipFn(k,Math.max(0,Math.round(L-(cx+cell/2))));
+    r.addEventListener("mousemove",e=>showTip(e,msg()));
+    r.addEventListener("mouseleave",hideTip);
+    r.addEventListener("click",e=>{showTip(e,msg());setTimeout(hideTip,1800)});
   }
   const eq=el("g",{"pointer-events":"none"},g);
   DRINK.forEach(y=>el("line",{x1:1,x2:119,y1:y,y2:y,stroke:css("--water"),"stroke-width":sw*1.5,opacity:.8},eq));
@@ -583,23 +583,40 @@ function drawHouse(svg,cell,G,max,winInfo,interactive,labels,rel,hPx){
     for(let x=0;x<=L;x+=20){lt(-1.6,x+fs*0.35,x+" m","end");el("line",{x1:-1.2,x2:-0.4,y1:x,y2:x,stroke:css("--muted"),"stroke-width":sw},svg)}
   }
 }
+const CELL=2;
+const typShare=(()=>{const G=grid(typical,CELL);return G.g.map(v=>v/typical.length)})();
+function diffCol(o,e){
+  const z=(o-e)/Math.sqrt(e+0.5);
+  if(o-e>=3&&z>=3)return`rgba(217,48,37,${(0.35+0.65*clamp((z-3)/6,0,1)).toFixed(2)})`;
+  if(e-o>=3&&z<=-2.5)return`rgba(43,123,214,${(0.3+0.5*clamp((-z-2.5)/3,0,1)).toFixed(2)})`;
+  return null;
+}
 function renderHouse(D,d){
-  const narrow=innerWidth<720,cell=narrow?2.5:1,row=document.getElementById("house");
+  const narrow=innerWidth<720,row=document.getElementById("house");
   const gap=parseFloat(getComputedStyle(row).columnGap)||16,vh=L+12.5,sumW=(W+13.2)+2*(W+3.8);
   const hPx=Math.min(narrow?520:640,(row.clientWidth-2*gap-6)*vh/sumW);
-  const info=windowEvents(D,d,win),G=grid(info.ev,cell),max=Math.max(1,...G.g);
-  drawHouse(document.getElementById("mapMain"),cell,G,max,info,true,true,false,hPx);
-  document.getElementById("mainT").textContent=t("mapMain")+" · "+t({today:"wToday",week:"wWeek",flock:"wFlock"}[win]);
-  const wk=windowEvents(D,d,"week"),Gy=grid(wk.ev,2.5),Gp=grid(typical,2.5),mh=hPx-(narrow?0:0);
-  drawHouse(document.getElementById("miniYou"),2.5,Gy,Math.max(1,...Gy.g),wk,false,false,true,hPx);
-  drawHouse(document.getElementById("miniPeer"),2.5,Gp,Math.max(1,...Gp.g),wk,false,false,true,hPx);
+  const info=windowEvents(D,d,win),G=grid(info.ev,CELL);
+  let expTot=0;for(let i=info.a;i<=info.b;i++)expTot+=N0*(1-D[i-1].cumE)*mExp(i)*0.93;
+  const E=typShare.map(s=>s*expTot),max=Math.max(1,...G.g,...E);
+  const seq=v=>v>0.05?heat(v/max):null;
+  const days=info.a===info.b?info.a:info.a+"–"+info.b;
+  const tipYou=(k,m)=>t("tipYou")(G.g[k],fmt(E[k],1),m,days);
+  drawHouse(document.getElementById("mapMain"),CELL,G,k=>seq(G.g[k]),tipYou,true,hPx);
+  drawHouse(document.getElementById("mapTyp"),CELL,G,k=>seq(E[k]),(k,m)=>t("tipTyp")(fmt(E[k],1),m),false,hPx);
+  drawHouse(document.getElementById("mapDiff"),CELL,G,k=>diffCol(G.g[k],E[k]),tipYou,false,hPx);
+  const wl=t({today:"wToday",week:"wWeek",flock:"wFlock"}[win]);
+  document.getElementById("mainT").textContent=t("mapMain")+" · "+wl;
+  document.getElementById("typT").textContent=t("mapTyp")+" · "+wl;
+  document.getElementById("diffT").textContent=t("mapDiff");
   // pattern label
   const P=pattern(D,d),pb=document.getElementById("pattern");
   const key={few:"pFew",normal:"pNormal",fan:"pFan",drink:"pDrink",patch:"pPatch"}[P.k];
   pb.innerHTML=`<i class="bg-${P.c}"></i>${t(key)}${P.k!=="few"?` <span>— ${t(key+"D")}</span>`:""}`;
   // legend
   const ramp=[0.05,0.35,0.65,1].map(v=>heat(v)).join(",");
-  document.getElementById("hmLegend").innerHTML=`<span class="k">${t("lgLow")} <span class="ramp" style="background:linear-gradient(90deg,${ramp})"></span> ${t("lgHigh")}</span>
+  document.getElementById("hmLegend").innerHTML=`<span class="k">0 <span class="ramp" style="background:linear-gradient(90deg,${ramp})"></span> ${t("lgScale")(Math.round(max))}</span>
+   <span class="k"><b style="width:12px;height:12px;border-radius:3px;background:rgba(43,123,214,.6)"></b>${t("lgLess")}</span>
+   <span class="k"><b style="width:12px;height:12px;border-radius:3px;background:rgba(217,48,37,.8)"></b>${t("lgMore")}</span>
    <span class="k"><b style="background:var(--water)"></b>${t("lgDrink")}</span>
    <span class="k"><b style="background:var(--feed)"></b>${t("lgFeed")}</span>
    <span class="k"><b style="height:5px;background:var(--rail);opacity:.6"></b>${t("lgRail")}</span>
