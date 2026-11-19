@@ -11,7 +11,7 @@
   --card:#ffffff; --accent:#1d1d1f; --accent-fg:#ffffff;
   --green:#1f9d55; --amber:#d98b00; --red:#d93025;
   --green-bg:#e8f6ee; --amber-bg:#fdf3e0; --red-bg:#fdecea;
-  --band:#e6e6ea; --house:#1d1d1f; --water:#2b7bd6; --feed:#a0703a; --rail:#d98b00;
+  --band:#e6e6ea; --house:#1d1d1f; --water:#2b7bd6; --feed:#a0703a; --rail:#d98b00; --calm:#dcebfa;
   --wall:#c9c9cf; --floor:#fafafa;
 }
 @media (prefers-color-scheme:dark){
@@ -20,7 +20,7 @@
     --card:#151517; --accent:#f2f2f2; --accent-fg:#0f0f10;
     --green:#3ccf7a; --amber:#f2a93b; --red:#ff6b5e;
     --green-bg:#12271b; --amber-bg:#2b2113; --red-bg:#2e1715;
-    --band:#2a2a2e; --house:#f2f2f2; --water:#5aa2f0; --feed:#c9955a; --rail:#f2a93b;
+    --band:#2a2a2e; --house:#f2f2f2; --water:#5aa2f0; --feed:#c9955a; --rail:#f2a93b; --calm:#1f3a57;
     --wall:#4a4a50; --floor:#18181a;
   }
 }
@@ -289,7 +289,7 @@ en:{
  h4:"Is something happening in my region?",q4:"Houses are grouped in anonymous areas. You see how many are unusual — never which farms.",
  mapT:"Unusual houses by area",mapS:"Number of similar houses currently above their normal range",
  you:"You",
- hexLg:["none","1","2","3+"],
+ hexLg:["0 · normal","1","2","3+"],
  tlT:"Unusual houses in the region, per day",tlS:"Dashed line: alert level (4 houses)",
  regOk:"No regional alert",regOkD:(n)=>`${n} of 41 similar houses in your area are unusual — normal background.`,
  regWarn:"Regional alert",
@@ -363,7 +363,7 @@ el:{
  h4:"Συμβαίνει κάτι στην περιοχή μου;",q4:"Οι θάλαμοι ομαδοποιούνται σε ανώνυμες ζώνες. Βλέπετε πόσοι έχουν πρόβλημα — ποτέ ποιες φάρμες.",
  mapT:"Θάλαμοι με απόκλιση ανά ζώνη",mapS:"Πόσοι παρόμοιοι θάλαμοι είναι τώρα πάνω από το φυσιολογικό τους",
  you:"Εσείς",
- hexLg:["κανένας","1","2","3+"],
+ hexLg:["0 · φυσιολογικά","1","2","3+"],
  tlT:"Θάλαμοι με απόκλιση στην περιοχή, ανά ημέρα",tlS:"Διακεκομμένη γραμμή: όριο συναγερμού (4 θάλαμοι)",
  regOk:"Κανένας περιφερειακός συναγερμός",regOkD:(n)=>`${n} από 41 παρόμοιους θαλάμους στην περιοχή σας έχουν απόκλιση — φυσιολογικό υπόβαθρο.`,
  regWarn:"Περιφερειακός συναγερμός",
@@ -667,13 +667,13 @@ function renderRegion(D,d){
   const svg=document.getElementById("hexMap");svg.innerHTML="";
   const R=46,hx=(c,r)=>[70+c*R*1.73+(r%2?R*0.865:0),60+r*R*1.5];
   const z=devZones(D,d);
-  const cols=[css("--field"),"#f6c453","#f08a2c",css("--red")];
+  const cols=[css("--calm"),"#f6c453","#f08a2c",css("--red")];
   ZONES.forEach(([c,r],i)=>{
     const [cx,cy]=hx(c,r);
     const pts=[...Array(6)].map((_,k)=>{const a=Math.PI/180*(60*k-30);return[cx+R*0.96*Math.cos(a),cy+R*0.96*Math.sin(a)]});
     const v=z[i],col=cols[Math.min(3,v)];
     el("polygon",{points:pts.map(p=>p.join(",")).join(" "),fill:col,stroke:i===YOU?css("--fg"):css("--line"),"stroke-width":i===YOU?3:1.5},svg);
-    el("text",{x:cx,y:cy+2,"font-size":20,"font-weight":700,"text-anchor":"middle",fill:v>=2?"#fff":css("--fg")},svg,v||"·");
+    el("text",{x:cx,y:cy+2,"font-size":20,"font-weight":700,"text-anchor":"middle",fill:v>=2?"#fff":css("--fg")},svg,String(v));
     el("text",{x:cx,y:cy+20,"font-size":11,"text-anchor":"middle",fill:v>=2?"#fff":css("--muted")},svg,`/ ${ZH[i]}`);
     if(i===YOU)el("text",{x:cx,y:cy-20,"font-size":12,"font-weight":700,"text-anchor":"middle",fill:v>=2?"#fff":css("--fg")},svg,"★ "+t("you"));
   });
