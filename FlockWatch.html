@@ -76,7 +76,10 @@ h2{font-size:1.3rem;font-weight:600;margin:0}
 .pattern span{font-weight:400;color:var(--muted)}
 .hmrow{display:flex;justify-content:center;align-items:flex-start;gap:clamp(10px,5vw,64px);margin-top:8px}
 .hmcol{display:flex;flex-direction:column;align-items:center;min-width:0}
-.hmcol h3{font-size:.9rem;font-weight:600;margin:10px 0 0;text-align:center;max-width:170px}
+.hmcol h3{font-size:.95rem;font-weight:600;margin:10px 0 0;text-align:center;max-width:260px}
+.wins{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wl{font-size:.85rem;color:var(--muted)}
+.hint{font-size:.8rem;color:var(--muted);text-align:center;margin:6px 0 0}
 .hmcol h3 span{display:block;font-weight:400;font-size:.78rem;color:var(--muted);margin-top:2px}
 .lgrow{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;width:100%;align-items:center}
 .lgt{font-weight:600;color:var(--fg)}
@@ -163,16 +166,14 @@ svg text{font-family:inherit}
     <div class="card">
       <div class="hmhead">
         <div class="pattern" id="pattern"></div>
+        <div class="wins"><span class="wl" data-t="wShow"></span>
         <div class="seg" id="win">
           <button data-w="today" data-t="wToday"></button>
-          <button data-w="week" data-t="wWeek"></button>
           <button data-w="flock" data-t="wFlock"></button>
-        </div>
+        </div></div>
       </div>
       <div class="hmrow" id="house">
-        <div class="hmcol"><svg id="mapMain"></svg><h3 id="mainT"></h3></div>
-        <div class="hmcol"><svg id="mapTyp"></svg><h3 id="typT"></h3></div>
-        <div class="hmcol"><svg id="mapDiff"></svg><h3 id="diffT"></h3></div>
+        <div class="hmcol"><svg id="mapMain"></svg><h3 id="mainT"></h3><p class="hint" data-t="hmHint"></p></div>
       </div>
       <div class="legend" id="hmLegend" style="flex-direction:column;gap:10px;margin-top:18px"></div>
     </div>
@@ -264,13 +265,12 @@ en:{
  vsTarget:(x)=>`${x>0?"+":""}${x}°C vs target`,rh:"humidity",
  thrNote:"Warning thresholds in this demo are illustrative (e.g. deaths above 0.5% a day for 2 days, or water use down more than 5%), based on published Dutch research on avian influenza. They are configurable — confirm with your vet.",
  h2:"Where are birds dying?",q2:"Every bird Railo picks up is logged with its exact position in the house (15 × 120 m).",
- wToday:"This day",wWeek:"Last 7 days",wFlock:"Since placement",
- mapMain:"Your house",mapTyp:"Normal for this age",mapDiff:"Unusual spots",
+ wShow:"Show:",wToday:"Single day",wFlock:"Cumulative",
+ mapMain:"Your house",hmHint:"Use the day slider at the top to move through the flock.",
  daysTxt:(a,b)=>a===b?`day ${a}`:`days ${a}–${b}`,
- subYou:(n,d)=>`${n} birds picked up, ${d}`,subTyp:(n,d)=>`about ${n} birds expected in similar houses, ${d}`,subDiff:"left map compared with middle map",
- lgCount:"Birds per 2 × 2 m spot:",lgUnder1:"under 1 (expected)",lgSame:"as normal",
- lgLess:"clearly fewer",lgMore:"clearly more",
- tipYou:(n,e,m,d)=>`${n} bird${n==1?"":"s"} (normal ${e}) · ${m} m from fans · day ${d}`,tipTyp:(e,m)=>`normal: ${e} birds · ${m} m from fans`,
+ subYou:(n,a,b)=>a===b?`${n} birds picked up on day ${b}`:`${n} birds picked up in total, day 1 to day ${b}`,
+ lgCount:"Birds per 2 × 2 m spot:",lgNone:"none",
+ tipYou:(n,m,d)=>`${n} bird${n==1?"":"s"} · ${m} m from fans · ${d}`,
  lgLow:"few",lgHigh:"many",lgDrink:"drinker lines",lgFeed:"feeder lines",lgRail:"Railo rail",
  fans:"Tunnel fans",pads:"Cooling pads",door:"Door",inlets:"side inlets",
  pNormal:"Evenly spread",pNormalD:"normal, no hotspot",
@@ -339,13 +339,12 @@ el:{
  vsTarget:(x)=>`${x>0?"+":""}${x}°C από τον στόχο`,rh:"υγρασία",
  thrNote:"Τα όρια προειδοποίησης σε αυτή την επίδειξη είναι ενδεικτικά (π.χ. θάνατοι πάνω από 0,5% την ημέρα για 2 ημέρες ή πτώση νερού πάνω από 5%), βάσει δημοσιευμένης ολλανδικής έρευνας για τη γρίπη των πτηνών. Ρυθμίζονται — επιβεβαιώστε με τον κτηνίατρό σας.",
  h2:"Πού πεθαίνουν τα πουλιά;",q2:"Κάθε πουλί που μαζεύει το Railo καταγράφεται με την ακριβή του θέση στον θάλαμο (15 × 120 m).",
- wToday:"Αυτή η ημέρα",wWeek:"Τελευταίες 7 ημέρες",wFlock:"Από την τοποθέτηση",
- mapMain:"Ο θάλαμός σας",mapTyp:"Φυσιολογικό για την ηλικία",mapDiff:"Ασυνήθιστα σημεία",
+ wShow:"Προβολή:",wToday:"Μία ημέρα",wFlock:"Αθροιστικά",
+ mapMain:"Ο θάλαμός σας",hmHint:"Μετακινήστε τη μπάρα ημερών επάνω για να δείτε όλη την εκτροφή.",
  daysTxt:(a,b)=>a===b?`ημέρα ${a}`:`ημέρες ${a}–${b}`,
- subYou:(n,d)=>`${n} πουλιά συλλέχθηκαν, ${d}`,subTyp:(n,d)=>`περίπου ${n} πουλιά αναμένονται σε παρόμοιους θαλάμους, ${d}`,subDiff:"ο αριστερός χάρτης σε σύγκριση με τον μεσαίο",
- lgCount:"Πουλιά ανά σημείο 2 × 2 m:",lgUnder1:"κάτω από 1 (αναμενόμενο)",lgSame:"όπως συνήθως",
- lgLess:"σαφώς λιγότερα",lgMore:"σαφώς περισσότερα",
- tipYou:(n,e,m,d)=>`${n} πουλ${n==1?"ί":"ιά"} (φυσιολογικά ${e}) · ${m} m από ανεμιστήρες · ημέρα ${d}`,tipTyp:(e,m)=>`φυσιολογικά: ${e} πουλιά · ${m} m από ανεμιστήρες`,
+ subYou:(n,a,b)=>a===b?`${n} πουλιά συλλέχθηκαν την ημέρα ${b}`:`${n} πουλιά συλλέχθηκαν συνολικά, από την ημέρα 1 έως την ημέρα ${b}`,
+ lgCount:"Πουλιά ανά σημείο 2 × 2 m:",lgNone:"κανένα",
+ tipYou:(n,m,d)=>`${n} πουλ${n==1?"ί":"ιά"} · ${m} m από ανεμιστήρες · ${d}`,
  lgLow:"λίγα",lgHigh:"πολλά",lgDrink:"γραμμές ποτίστρας",lgFeed:"γραμμές ταΐστρας",lgRail:"ράγα Railo",
  fans:"Ανεμιστήρες",pads:"Δροσιστικά πάνελ",door:"Πόρτα",inlets:"πλευρικά ανοίγματα",
  pNormal:"Ομοιόμορφη κατανομή",pNormalD:"φυσιολογικό, χωρίς εστία",
@@ -404,7 +403,7 @@ el:{
 }};
 
 /* ============ state ============ */
-let lang="en",scen="region",day=30,win="week",timer=null;
+let lang="en",scen="region",day=30,win="today",timer=null;
 try{lang=localStorage.getItem("fw-lang")||(navigator.language||"").startsWith("el")&&"el"||"en"}catch(e){}
 const t=k=>T[lang][k];
 const fmt=(x,d=1)=>x.toLocaleString(lang==="el"?"el-GR":"en-GB",{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -466,7 +465,6 @@ function gen(s){
   if(s==="house")for(let d=22;d<=DAYS;d++)if(out[d-1].rate>out[d-1].p90)dev[d-1]=Math.min(2,dev[d-1]+1);
   cache[s]=out;return out;
 }
-const typical=(()=>{const r=rng(5),a=[];for(let i=0;i<4000;i++)a.push(basePos(r));return a})();
 
 /* ============ helpers ============ */
 const NS="http://www.w3.org/2000/svg";
@@ -596,29 +594,14 @@ const CELL=2;
 const CLS=[[1,"#fdeaa0"],[2,"#fbc85a"],[4,"#f39a3a"],[8,"#e2582a"],[16,"#b01e1a"]];
 const FAINT="#fdf6dc";
 function clsCol(v){if(v<0.05)return null;if(v<1)return dark()?"#3a3424":FAINT;let c=CLS[0][1];for(const [m,col] of CLS)if(v>=m)c=col;return c}
-const typShare=(()=>{const G=grid(typical,CELL);return G.g.map(v=>v/typical.length)})();
-function diffCol(o,e){
-  const z=(o-e)/Math.sqrt(e+0.5);
-  if(o-e>=3&&z>=3)return`rgba(217,48,37,${(0.35+0.65*clamp((z-3)/6,0,1)).toFixed(2)})`;
-  if(e-o>=3&&z<=-2.5)return`rgba(43,123,214,${(0.3+0.5*clamp((-z-2.5)/3,0,1)).toFixed(2)})`;
-  return null;
-}
 function renderHouse(D,d){
   const narrow=innerWidth<720,row=document.getElementById("house");
-  const gap=parseFloat(getComputedStyle(row).columnGap)||16,vh=L+12.5,sumW=(W+13.2)+2*(W+3.8);
-  const hPx=Math.min(narrow?520:640,(row.clientWidth-2*gap-6)*vh/sumW);
+  const vh=L+12.5,vw=W+13.2;
+  const hPx=Math.min(narrow?520:640,(row.clientWidth-6)*vh/vw);
   const info=windowEvents(D,d,win),G=grid(info.ev,CELL);
-  let expTot=0;for(let i=info.a;i<=info.b;i++)expTot+=N0*(1-D[i-1].cumE)*mExp(i)*0.93;
-  const E=typShare.map(s=>s*expTot),seq=clsCol;
-  const days=info.a===info.b?info.a:info.a+"–"+info.b,dtxt=t("daysTxt")(info.a,info.b);
-  const tipYou=(k,m)=>t("tipYou")(G.g[k],fmt(E[k],1),m,days);
-  drawHouse(document.getElementById("mapMain"),CELL,G,k=>seq(G.g[k]),tipYou,true,hPx);
-  drawHouse(document.getElementById("mapTyp"),CELL,G,k=>seq(E[k]),(k,m)=>t("tipTyp")(fmt(E[k],1),m),false,hPx);
-  drawHouse(document.getElementById("mapDiff"),CELL,G,k=>diffCol(G.g[k],E[k]),tipYou,false,hPx);
-  const tot=info.ev.length,etot=Math.round(expTot);
-  document.getElementById("mainT").innerHTML=`${t("mapMain")}<span>${t("subYou")(tot,dtxt)}</span>`;
-  document.getElementById("typT").innerHTML=`${t("mapTyp")}<span>${t("subTyp")(etot,dtxt)}</span>`;
-  document.getElementById("diffT").innerHTML=`${t("mapDiff")}<span>${t("subDiff")}</span>`;
+  const dtxt=t("daysTxt")(info.a,info.b);
+  drawHouse(document.getElementById("mapMain"),CELL,G,k=>clsCol(G.g[k]),(k,m)=>t("tipYou")(G.g[k],m,dtxt),true,hPx);
+  document.getElementById("mainT").innerHTML=`${t("mapMain")}<span>${t("subYou")(info.ev.length,info.a,info.b)}</span>`;
   // pattern label
   const P=pattern(D,d),pb=document.getElementById("pattern");
   const key={few:"pFew",normal:"pNormal",fan:"pFan",drink:"pDrink",patch:"pPatch"}[P.k];
@@ -626,8 +609,7 @@ function renderHouse(D,d){
   // legend
   const sw=(c)=>`<b style="width:14px;height:14px;border-radius:3px;background:${c}"></b>`;
   document.getElementById("hmLegend").innerHTML=`<div class="lgrow"><span class="lgt">${t("lgCount")}</span>
-   <span class="k">${sw(FAINT)}${t("lgUnder1")}</span>${CLS.map((c,i)=>`<span class="k">${sw(c[1])}${i<CLS.length-1?(c[0]===CLS[i+1][0]-1?c[0]:c[0]+"–"+(CLS[i+1][0]-1)):c[0]+"+"}</span>`).join("")}</div>
-   <div class="lgrow"><span class="lgt">${t("mapDiff")}:</span><span class="k">${sw("rgba(217,48,37,.85)")}${t("lgMore")}</span><span class="k">${sw("rgba(43,123,214,.6)")}${t("lgLess")}</span><span class="k">${sw("transparent;border:1px solid var(--line)")}${t("lgSame")}</span></div>
+   <span class="k">${sw("transparent;border:1px solid var(--line)")}${t("lgNone")}</span>${CLS.map((c,i)=>`<span class="k">${sw(c[1])}${i<CLS.length-1?(c[0]===CLS[i+1][0]-1?c[0]:c[0]+"–"+(CLS[i+1][0]-1)):c[0]+"+"}</span>`).join("")}</div>
    <div class="lgrow">
    <span class="k"><b style="background:var(--water)"></b>${t("lgDrink")}</span>
    <span class="k"><b style="background:var(--feed)"></b>${t("lgFeed")}</span>
