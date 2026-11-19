@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>FlockWatch · Railo</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1d1d1f; --muted:#6e6e73; --line:#e3e3e6; --field:#f5f5f7;
+  --card:#ffffff; --accent:#1d1d1f; --accent-fg:#ffffff;
+  --green:#1f9d55; --amber:#d98b00; --red:#d93025;
+  --green-bg:#e8f6ee; --amber-bg:#fdf3e0; --red-bg:#fdecea;
+  --band:#e6e6ea; --house:#1d1d1f; --water:#2b7bd6; --feed:#a0703a; --rail:#d98b00;
+  --wall:#c9c9cf; --floor:#fafafa;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f0f10; --fg:#f2f2f2; --muted:#9a9aa0; --line:#2a2a2d; --field:#1a1a1c;
+    --card:#151517; --accent:#f2f2f2; --accent-fg:#0f0f10;
+    --green:#3ccf7a; --amber:#f2a93b; --red:#ff6b5e;
+    --green-bg:#12271b; --amber-bg:#2b2113; --red-bg:#2e1715;
+    --band:#2a2a2e; --house:#f2f2f2; --water:#5aa2f0; --feed:#c9955a; --rail:#f2a93b;
+    --wall:#4a4a50; --floor:#18181a;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45}
+.wrap{max-width:1120px;margin:0 auto;padding:40px 16px 64px}
+a{color:inherit}
+header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+h1{font-weight:600;letter-spacing:.02em;font-size:clamp(2rem,6vw,2.8rem);margin:0}
+h1 small{font-weight:400;color:var(--muted);font-size:.45em;letter-spacing:0;margin-left:8px}
+.lead{color:var(--muted);margin:6px 0 0;max-width:620px}
+.badge{display:inline-block;font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--field);color:var(--muted);margin-top:10px}
+.lang{display:flex;background:var(--field);border-radius:10px;padding:3px}
+.lang button,.seg button{font:inherit;border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:600}
+.lang button.on,.seg button.on{background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+.controls{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);margin:28px -16px 0;padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center}
+.seg{display:flex;flex-wrap:wrap;background:var(--field);border-radius:12px;padding:3px;gap:2px}
+.daybox{display:flex;align-items:center;gap:10px;flex:1;min-width:260px}
+.daybox input{flex:1;accent-color:var(--fg)}
+.daybox .d{font-weight:600;min-width:72px;white-space:nowrap}
+.play{font:inherit;font-weight:600;border:0;border-radius:10px;padding:7px 12px;background:var(--accent);color:var(--accent-fg);cursor:pointer;min-width:44px}
+
+.banner{margin-top:24px;border-radius:16px;padding:16px 18px;display:flex;gap:12px;align-items:flex-start;font-size:1.02rem}
+.banner .dot{flex:none;width:14px;height:14px;border-radius:50%;margin-top:5px}
+.banner.g{background:var(--green-bg)}.banner.g .dot{background:var(--green)}
+.banner.a{background:var(--amber-bg)}.banner.a .dot{background:var(--amber)}
+.banner.r{background:var(--red-bg)}.banner.r .dot{background:var(--red)}
+.banner b{display:block;margin-bottom:2px}
+
+section{margin-top:52px}
+h2{font-size:1.3rem;font-weight:600;margin:0}
+.q{color:var(--muted);margin:4px 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:460px){.tiles{grid-template-columns:1fr}}
+.tile{position:relative;padding:16px 16px 12px}
+.tile .lbl{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:7px}
+.tile .lbl i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.tile .val{font-size:1.7rem;font-weight:600;margin:4px 0 0;letter-spacing:-.01em}
+.tile .val span{font-size:.95rem;font-weight:500;color:var(--muted);margin-left:4px}
+.tile .cmp{font-size:.85rem;margin:2px 0 6px}
+.tile svg{width:100%;height:38px;display:block}
+.c-g{color:var(--green)}.c-a{color:var(--amber)}.c-r{color:var(--red)}
+.bg-g{background:var(--green)}.bg-a{background:var(--amber)}.bg-r{background:var(--red)}
+.note{font-size:.8rem;color:var(--muted);margin-top:8px}
+
+.hmhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+.pattern{display:flex;gap:10px;align-items:center;font-weight:600}
+.pattern i{width:12px;height:12px;border-radius:50%;flex:none}
+.pattern span{font-weight:400;color:var(--muted)}
+.house svg{width:100%;display:block;overflow:visible}
+.house .half+.half{margin-top:10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.8rem;color:var(--muted);margin-top:12px;align-items:center}
+.legend .ramp{width:120px;height:10px;border-radius:5px}
+.legend .k{display:inline-flex;align-items:center;gap:6px}
+.legend .k b{display:inline-block;width:18px;height:3px;border-radius:2px}
+.minis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@media (max-width:640px){.minis{grid-template-columns:1fr}}
+.mini h3{font-size:.9rem;font-weight:600;margin:0 0 6px}
+.mini svg{width:100%;display:block}
+
+.grid2{display:grid;grid-template-columns:3fr 2fr;gap:12px}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.chart svg{width:100%;display:block}
+.chart h3,.card h3{font-size:.95rem;font-weight:600;margin:0 0 2px}
+.chart .sub{font-size:.85rem;color:var(--muted);margin:0 0 8px}
+.rank{margin-top:6px}
+.rank .bar{position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--red),var(--amber) 35%,var(--green) 70%);margin:26px 0 8px}
+.rank .mk{position:absolute;top:-24px;transform:translateX(-50%);font-size:.8rem;font-weight:700;white-space:nowrap}
+.rank .mk:after{content:"";position:absolute;left:50%;top:18px;width:3px;height:22px;background:var(--fg);transform:translateX(-50%);border-radius:2px}
+.rank .ends{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted)}
+.big{font-size:1.15rem;margin:10px 0 0}
+
+.alert{border-radius:16px;padding:16px 18px;margin-top:12px}
+.alert.g{background:var(--green-bg)}.alert.a{background:var(--amber-bg)}.alert.r{background:var(--red-bg)}
+.alert b{display:block;margin-bottom:4px}
+.causes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:760px){.causes{grid-template-columns:1fr}}
+.cause .ic{font-size:1.6rem}
+.cause h3{margin:6px 0 2px}
+.cause .meter{height:10px;border-radius:5px;background:var(--field);overflow:hidden;margin:10px 0 6px}
+.cause .meter div{height:100%;border-radius:5px}
+.cause .v{font-size:.85rem;font-weight:700}
+.cause.dim{opacity:.55}
+.verdict{margin-top:14px;font-size:1.1rem}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.steps{grid-template-columns:1fr 1fr}}
+.step{text-align:center;padding:20px 12px}
+.step .ic{font-size:1.8rem}
+.step b{display:block;margin:8px 0 2px}
+.step p{margin:0;color:var(--muted);font-size:.88rem}
+.privacy{margin-top:14px;color:var(--muted);font-size:.9rem;text-align:center}
+footer{margin-top:48px;text-align:center;color:var(--muted);font-size:.85rem}
+#tip{position:fixed;pointer-events:none;z-index:20;background:var(--fg);color:var(--bg);font-size:.8rem;padding:6px 9px;border-radius:8px;opacity:0;transition:opacity .1s;white-space:nowrap}
+svg text{font-family:inherit}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>FlockWatch <small>by Railo</small></h1>
+      <p class="lead" data-t="lead"></p>
+      <span class="badge" data-t="demo"></span>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button data-lang="en">EN</button><button data-lang="el">ΕΛ</button>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="seg" id="scen">
+      <button data-s="normal" data-t="sNormal"></button>
+      <button data-s="house" data-t="sHouse"></button>
+      <button data-s="region" data-t="sRegion"></button>
+    </div>
+    <div class="daybox">
+      <button class="play" id="play" aria-label="Play">▶</button>
+      <input type="range" id="day" min="1" max="42" value="30" aria-label="Day">
+      <span class="d" id="dayLbl"></span>
+    </div>
+  </div>
+
+  <div class="banner" id="banner"><span class="dot"></span><div id="bannerTxt"></div></div>
+
+  <section>
+    <h2 data-t="h1"></h2>
+    <p class="q" data-t="q1"></p>
+    <div class="tiles" id="tiles"></div>
+    <p class="note" data-t="thrNote"></p>
+  </section>
+
+  <section>
+    <h2 data-t="h2"></h2>
+    <p class="q" data-t="q2"></p>
+    <div class="card">
+      <div class="hmhead">
+        <div class="pattern" id="pattern"></div>
+        <div class="seg" id="win">
+          <button data-w="today" data-t="wToday"></button>
+          <button data-w="week" data-t="wWeek"></button>
+          <button data-w="flock" data-t="wFlock"></button>
+        </div>
+      </div>
+      <div class="house" id="house"></div>
+      <div class="legend" id="hmLegend"></div>
+      <div class="minis">
+        <div class="mini"><h3 data-t="miniYou"></h3><svg id="miniYou"></svg></div>
+        <div class="mini"><h3 data-t="miniPeer"></h3><svg id="miniPeer"></svg></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-t="h3"></h2>
+    <p class="q" id="groupLine"></p>
+    <div class="grid2">
+      <div class="card chart">
+        <h3 data-t="c1t"></h3><p class="sub" data-t="c1s"></p>
+        <svg id="bandChart" viewBox="0 0 640 260"></svg>
+        <div class="legend">
+          <span class="k"><b style="height:10px;background:var(--band)"></b><span data-t="lgBand"></span></span>
+          <span class="k"><b style="background:var(--muted)"></b><span data-t="lgAvg"></span></span>
+          <span class="k"><b style="height:4px;background:var(--house)"></b><span data-t="lgYou"></span></span>
+          <span class="k"><b style="width:8px;height:8px;border-radius:50%;background:var(--red)"></b><span data-t="lgOut"></span></span>
+        </div>
+      </div>
+      <div style="display:grid;gap:12px">
+        <div class="card rank">
+          <h3 data-t="rankT"></h3>
+          <div class="bar"><div class="mk" id="rankMk"></div></div>
+          <div class="ends"><span data-t="worse"></span><span data-t="better"></span></div>
+          <p class="big" id="rankTxt"></p>
+        </div>
+        <div class="card chart">
+          <h3 data-t="c2t"></h3><p class="sub" data-t="c2s"></p>
+          <svg id="ratioChart" viewBox="0 0 400 170"></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-t="h4"></h2>
+    <p class="q" data-t="q4"></p>
+    <div class="grid2">
+      <div class="card chart">
+        <h3 data-t="mapT"></h3><p class="sub" data-t="mapS"></p>
+        <svg id="hexMap" viewBox="14 6 470 316"></svg>
+        <div class="legend" id="hexLegend"></div>
+      </div>
+      <div style="display:grid;gap:12px;align-content:start">
+        <div class="card chart">
+          <h3 data-t="tlT"></h3><p class="sub" data-t="tlS"></p>
+          <svg id="timeline" viewBox="0 0 400 190"></svg>
+        </div>
+        <div class="alert" id="regAlert"></div>
+      </div>
+    </div>
+    <p class="note" data-t="dutch"></p>
+  </section>
+
+  <section>
+    <h2 data-t="h5"></h2>
+    <p class="q" data-t="q5"></p>
+    <div class="causes" id="causes"></div>
+    <p class="verdict" id="verdict"></p>
+  </section>
+
+  <section>
+    <h2 data-t="h6"></h2>
+    <div class="steps" style="margin-top:16px">
+      <div class="card step"><div class="ic">🤖</div><b data-t="st1"></b><p data-t="st1p"></p></div>
+      <div class="card step"><div class="ic">📍</div><b data-t="st2"></b><p data-t="st2p"></p></div>
+      <div class="card step"><div class="ic">🔒</div><b data-t="st3"></b><p data-t="st3p"></p></div>
+      <div class="card step"><div class="ic">🔔</div><b data-t="st4"></b><p data-t="st4p"></p></div>
+    </div>
+    <p class="privacy" data-t="privacy"></p>
+  </section>
+
+  <footer>© <span id="yr"></span> Railo · <a href="/">railo.gr</a></footer>
+</div>
+<div id="tip"></div>
+
+<script>
+/* ============ i18n ============ */
+const T={
+en:{
+ lead:"See the condition of your broiler house at a glance, where birds are dying, how you compare with similar houses, and early warnings from your region.",
+ demo:"Demo · simulated data",
+ sNormal:"Normal flock",sHouse:"House problem",sRegion:"Regional alert",
+ day:"Day",
+ h1:"How is my house today?",q1:"Four checks, compared with what is normal for your flock's age.",
+ tDeaths:"Deaths today",tTotal:"Total losses",tWater:"Water use",tClimate:"Climate",
+ birds:"birds",ofFlock:"of flock",perK:"L / 1000 birds",
+ vsPeers:(x)=>`${x}× similar houses`,vsExp:(x)=>`${x>0?"+":""}${x}% vs expected`,
+ vsTarget:(x)=>`${x>0?"+":""}${x}°C vs target`,rh:"humidity",
+ thrNote:"Warning thresholds in this demo are illustrative (e.g. deaths above 0.5% a day for 2 days, or water use down more than 5%), based on published Dutch research on avian influenza. They are configurable — confirm with your vet.",
+ h2:"Where are birds dying?",q2:"Every bird Railo picks up is logged with its exact position in the house (15 × 120 m).",
+ wToday:"Today",wWeek:"Last 7 days",wFlock:"Whole flock",
+ miniYou:"Your pattern (last 7 days)",miniPeer:"Typical pattern in similar houses",
+ lgLow:"few",lgHigh:"many",lgDrink:"drinker lines",lgFeed:"feeder lines",lgRail:"Railo rail",
+ fans:"Tunnel fans",pads:"Cooling pads",door:"Door",inlets:"side inlets",
+ pNormal:"Evenly spread",pNormalD:"normal, no hotspot",
+ pFan:"Clustered near the fans",pFanD:"heat stress or airflow — check fans and temperature",
+ pDrink:"Along drinker lines",pDrinkD:"wet litter or leaking drinkers",
+ pPatch:"Spreading patch, growing daily",pPatchD:"possible infection — call your vet",
+ pFew:"Too few pickups to see a pattern",
+ tip:(n,m,a,b)=>`${n} bird${n==1?"":"s"} · ${m} m from fans · day ${a===b?a:a+"–"+b}`,
+ h3:"Am I doing better or worse than similar houses?",
+ group:(n)=>`Compared with <b>${n} similar houses</b> — Ross 308, winter, tunnel‑ventilated, same age. No farm names are ever shown.`,
+ c1t:"Daily deaths, % of flock",c1s:"Your house against the normal range of similar houses",
+ lgBand:"normal range (8 of 10 similar houses)",lgAvg:"average",lgYou:"your house",lgOut:"outside normal",
+ rankT:"This week's ranking",worse:"worse",better:"better",
+ rankTxt:(p)=>`You are doing better than <b>${p}%</b> of similar houses this week.`,
+ c2t:"Water to feed ratio",c2s:"A sudden change is often the earliest warning",
+ h4:"Is something happening in my region?",q4:"Houses are grouped in anonymous areas. You see how many are unusual — never which farms.",
+ mapT:"Unusual houses by area",mapS:"Number of similar houses currently above their normal range",
+ you:"You",
+ hexLg:["none","1","2","3+"],
+ tlT:"Unusual houses in the region, per day",tlS:"Dashed line: alert level (4 houses)",
+ regOk:"No regional alert",regOkD:(n)=>`${n} of 41 similar houses in your area are unusual — normal background.`,
+ regWarn:"Regional alert",
+ regWarnD:(n,d,me)=>`${n} of 41 similar houses in your area show rising deaths and falling water use since day ${d}. ${me?"Your house is now affected too.":"Your house is not yet affected."} Recommended: tighten biosecurity and watch water use closely.`,
+ regPre:"Watch",regPreD:(n)=>`${n} of 41 similar houses are unusual. Not yet an alert — keep an eye on it.`,
+ dutch:"Reference lines and thresholds are illustrative and based on published Dutch research on mortality and water use as early signs of avian influenza. Configurable — confirm with your vet.",
+ h5:"Is it my house, the chicks or the feed?",q5:"When houses deviate, FlockWatch checks what they have in common.",
+ cChick:"Chick batch",cFeed:"Feed batch",cHouse:"House",
+ likely:"Likely cause",unlikely:"Unlikely",notCause:"Not the cause",
+ cNone:"Nothing unusual to explain right now.",
+ cChickR:(k,n)=>`${k} of ${n} affected houses got chicks from the same hatchery batch.`,
+ cFeedR:(k,n)=>`${k} of ${n} share a feed delivery.`,
+ cHouseR:"Patterns differ between houses — not a single-house issue.",
+ cChickH:"0 of 11 other houses with your chick batch show this.",
+ cFeedH:"0 of 8 houses with your feed delivery show this.",
+ cHouseH:"Only your house, concentrated near the fans.",
+ vNone:"All clear — nothing to act on.",
+ vChick:"Most likely: <b>chick batch</b>. Contact your hatchery and your vet.",
+ vHouse:"Only your house: <b>check ventilation and fans</b>.",
+ h6:"How it works",
+ st1:"Railo picks up",st1p:"The trolley collects dead birds on its daily rounds.",
+ st2:"Logs the position",st2p:"Each pickup is saved with its exact place in the house.",
+ st3:"Compared anonymously",st3p:"A server compares your house with similar houses only.",
+ st4:"Early warning",st4p:"You are told when something looks wrong — in your house or your region.",
+ privacy:"Your data is only ever compared in anonymous groups of similar houses.",
+ bOk:"All good",bOkD:"Your house is within the normal range for day ",
+ bHouse:"Check your house",bReg:"Regional alert",
+ msgDeaths:(x)=>`Deaths are ${x}× similar houses.`,
+ msgDays:(n)=>`Above normal for ${n} day${n==1?"":"s"} in a row.`,
+ msgWaterDown:(x)=>`Water use is down ${x}%.`,
+ msgWaterUp:(x)=>`Water use is up ${x}%.`,
+ msgHot:(x)=>`House is ${x}°C above target.`,
+ msgFan:"Check birds and airflow near the fans.",
+ msgPatch:"A growing patch in the middle of the house — call your vet.",
+ msgRegion:(n)=>`${n} similar houses in your region are unusual right now.`,
+ msgRegionYou:"Your house is not yet affected — tighten biosecurity."
+},
+el:{
+ lead:"Δείτε με μια ματιά την κατάσταση του θαλάμου σας, πού πεθαίνουν τα πουλιά, πώς συγκρίνεστε με παρόμοιους θαλάμους και έγκαιρες προειδοποιήσεις από την περιοχή σας.",
+ demo:"Επίδειξη · προσομοιωμένα δεδομένα",
+ sNormal:"Κανονικό σμήνος",sHouse:"Πρόβλημα θαλάμου",sRegion:"Περιφερειακός συναγερμός",
+ day:"Ημέρα",
+ h1:"Πώς είναι ο θάλαμός μου σήμερα;",q1:"Τέσσερις έλεγχοι, σε σύγκριση με το φυσιολογικό για την ηλικία του σμήνους.",
+ tDeaths:"Θάνατοι σήμερα",tTotal:"Συνολικές απώλειες",tWater:"Κατανάλωση νερού",tClimate:"Κλίμα",
+ birds:"πουλιά",ofFlock:"του σμήνους",perK:"L / 1000 πουλιά",
+ vsPeers:(x)=>`${x}× από παρόμοιους`,vsExp:(x)=>`${x>0?"+":""}${x}% από το αναμενόμενο`,
+ vsTarget:(x)=>`${x>0?"+":""}${x}°C από τον στόχο`,rh:"υγρασία",
+ thrNote:"Τα όρια προειδοποίησης σε αυτή την επίδειξη είναι ενδεικτικά (π.χ. θάνατοι πάνω από 0,5% την ημέρα για 2 ημέρες ή πτώση νερού πάνω από 5%), βάσει δημοσιευμένης ολλανδικής έρευνας για τη γρίπη των πτηνών. Ρυθμίζονται — επιβεβαιώστε με τον κτηνίατρό σας.",
+ h2:"Πού πεθαίνουν τα πουλιά;",q2:"Κάθε πουλί που μαζεύει το Railo καταγράφεται με την ακριβή του θέση στον θάλαμο (15 × 120 m).",
+ wToday:"Σήμερα",wWeek:"Τελευταίες 7 ημέρες",wFlock:"Όλο το σμήνος",
+ miniYou:"Το δικό σας μοτίβο (7 ημέρες)",miniPeer:"Τυπικό μοτίβο σε παρόμοιους θαλάμους",
+ lgLow:"λίγα",lgHigh:"πολλά",lgDrink:"γραμμές ποτίστρας",lgFeed:"γραμμές ταΐστρας",lgRail:"ράγα Railo",
+ fans:"Ανεμιστήρες",pads:"Δροσιστικά πάνελ",door:"Πόρτα",inlets:"πλευρικά ανοίγματα",
+ pNormal:"Ομοιόμορφη κατανομή",pNormalD:"φυσιολογικό, χωρίς εστία",
+ pFan:"Συγκέντρωση κοντά στους ανεμιστήρες",pFanD:"θερμικό στρες ή ροή αέρα — ελέγξτε ανεμιστήρες και θερμοκρασία",
+ pDrink:"Κατά μήκος των ποτιστρών",pDrinkD:"υγρή στρωμνή ή διαρροή ποτίστρας",
+ pPatch:"Εστία που μεγαλώνει καθημερινά",pPatchD:"πιθανή λοίμωξη — καλέστε τον κτηνίατρο",
+ pFew:"Πολύ λίγα πουλιά για να φανεί μοτίβο",
+ tip:(n,m,a,b)=>`${n} πουλ${n==1?"ί":"ιά"} · ${m} m από ανεμιστήρες · ημέρα ${a===b?a:a+"–"+b}`,
+ h3:"Τα πάω καλύτερα ή χειρότερα από παρόμοιους θαλάμους;",
+ group:(n)=>`Σύγκριση με <b>${n} παρόμοιους θαλάμους</b> — Ross 308, χειμώνας, τουνελ αερισμός, ίδια ηλικία. Ονόματα φαρμών δεν εμφανίζονται ποτέ.`,
+ c1t:"Ημερήσιοι θάνατοι, % του σμήνους",c1s:"Ο θάλαμός σας σε σχέση με το φυσιολογικό εύρος παρόμοιων θαλάμων",
+ lgBand:"φυσιολογικό εύρος (8 στους 10 θαλάμους)",lgAvg:"μέσος όρος",lgYou:"ο θάλαμός σας",lgOut:"εκτός φυσιολογικού",
+ rankT:"Κατάταξη εβδομάδας",worse:"χειρότερα",better:"καλύτερα",
+ rankTxt:(p)=>`Τα πάτε καλύτερα από το <b>${p}%</b> των παρόμοιων θαλάμων αυτή την εβδομάδα.`,
+ c2t:"Αναλογία νερού προς τροφή",c2s:"Μια απότομη αλλαγή είναι συχνά η πρώτη προειδοποίηση",
+ h4:"Συμβαίνει κάτι στην περιοχή μου;",q4:"Οι θάλαμοι ομαδοποιούνται σε ανώνυμες ζώνες. Βλέπετε πόσοι έχουν πρόβλημα — ποτέ ποιες φάρμες.",
+ mapT:"Θάλαμοι με απόκλιση ανά ζώνη",mapS:"Πόσοι παρόμοιοι θάλαμοι είναι τώρα πάνω από το φυσιολογικό τους",
+ you:"Εσείς",
+ hexLg:["κανένας","1","2","3+"],
+ tlT:"Θάλαμοι με απόκλιση στην περιοχή, ανά ημέρα",tlS:"Διακεκομμένη γραμμή: όριο συναγερμού (4 θάλαμοι)",
+ regOk:"Κανένας περιφερειακός συναγερμός",regOkD:(n)=>`${n} από 41 παρόμοιους θαλάμους στην περιοχή σας έχουν απόκλιση — φυσιολογικό υπόβαθρο.`,
+ regWarn:"Περιφερειακός συναγερμός",
+ regWarnD:(n,d,me)=>`${n} από 41 παρόμοιους θαλάμους στην περιοχή σας δείχνουν αυξανόμενους θανάτους και πτώση νερού από την ημέρα ${d}. ${me?"Ο θάλαμός σας επηρεάζεται πλέον κι αυτός.":"Ο θάλαμός σας δεν έχει επηρεαστεί ακόμα."} Σύσταση: αυστηρότερη βιοασφάλεια και στενή παρακολούθηση του νερού.`,
+ regPre:"Προσοχή",regPreD:(n)=>`${n} από 41 παρόμοιους θαλάμους έχουν απόκλιση. Όχι ακόμα συναγερμός — παρακολουθήστε.`,
+ dutch:"Οι γραμμές αναφοράς και τα όρια είναι ενδεικτικά, βάσει δημοσιευμένης ολλανδικής έρευνας για τη θνησιμότητα και την κατανάλωση νερού ως πρώιμα σημάδια γρίπης των πτηνών. Ρυθμίζονται — επιβεβαιώστε με τον κτηνίατρό σας.",
+ h5:"Φταίει ο θάλαμος, οι νεοσσοί ή η τροφή;",q5:"Όταν θάλαμοι αποκλίνουν, το FlockWatch ελέγχει τι έχουν κοινό.",
+ cChick:"Παρτίδα νεοσσών",cFeed:"Παρτίδα τροφής",cHouse:"Θάλαμος",
+ likely:"Πιθανή αιτία",unlikely:"Απίθανο",notCause:"Δεν είναι η αιτία",
+ cNone:"Τίποτα ασυνήθιστο προς εξήγηση αυτή τη στιγμή.",
+ cChickR:(k,n)=>`${k} από ${n} θαλάμους με πρόβλημα πήραν νεοσσούς από την ίδια παρτίδα εκκολαπτηρίου.`,
+ cFeedR:(k,n)=>`${k} από ${n} μοιράζονται παράδοση τροφής.`,
+ cHouseR:"Τα μοτίβα διαφέρουν μεταξύ θαλάμων — δεν είναι θέμα ενός θαλάμου.",
+ cChickH:"0 από 11 άλλους θαλάμους με την ίδια παρτίδα νεοσσών το δείχνουν.",
+ cFeedH:"0 από 8 θαλάμους με την ίδια παράδοση τροφής το δείχνουν.",
+ cHouseH:"Μόνο ο δικός σας θάλαμος, συγκεντρωμένο κοντά στους ανεμιστήρες.",
+ vNone:"Όλα καλά — καμία ενέργεια.",
+ vChick:"Πιθανότερο: <b>παρτίδα νεοσσών</b>. Επικοινωνήστε με το εκκολαπτήριο και τον κτηνίατρο.",
+ vHouse:"Μόνο ο θάλαμός σας: <b>ελέγξτε αερισμό και ανεμιστήρες</b>.",
+ h6:"Πώς λειτουργεί",
+ st1:"Το Railo μαζεύει",st1p:"Το καρότσι συλλέγει τα νεκρά πουλιά στις καθημερινές διαδρομές.",
+ st2:"Καταγράφει τη θέση",st2p:"Κάθε συλλογή αποθηκεύεται με την ακριβή θέση στον θάλαμο.",
+ st3:"Ανώνυμη σύγκριση",st3p:"Ένας server συγκρίνει τον θάλαμό σας μόνο με παρόμοιους.",
+ st4:"Έγκαιρη ειδοποίηση",st4p:"Ενημερώνεστε όταν κάτι δεν πάει καλά — στον θάλαμο ή στην περιοχή.",
+ privacy:"Τα δεδομένα σας συγκρίνονται μόνο σε ανώνυμες ομάδες παρόμοιων θαλάμων.",
+ bOk:"Όλα καλά",bOkD:"Ο θάλαμός σας είναι εντός φυσιολογικού για την ημέρα ",
+ bHouse:"Ελέγξτε τον θάλαμο",bReg:"Περιφερειακός συναγερμός",
+ msgDeaths:(x)=>`Οι θάνατοι είναι ${x}× από παρόμοιους θαλάμους.`,
+ msgDays:(n)=>`Πάνω από το φυσιολογικό ${n} ${n==1?"ημέρα":"συνεχόμενες ημέρες"}.`,
+ msgWaterDown:(x)=>`Η κατανάλωση νερού έπεσε ${x}%.`,
+ msgWaterUp:(x)=>`Η κατανάλωση νερού αυξήθηκε ${x}%.`,
+ msgHot:(x)=>`Ο θάλαμος είναι ${x}°C πάνω από τον στόχο.`,
+ msgFan:"Ελέγξτε τα πουλιά και τη ροή αέρα κοντά στους ανεμιστήρες.",
+ msgPatch:"Μια εστία που μεγαλώνει στη μέση του θαλάμου — καλέστε τον κτηνίατρο.",
+ msgRegion:(n)=>`${n} παρόμοιοι θάλαμοι στην περιοχή σας έχουν απόκλιση αυτή τη στιγμή.`,
+ msgRegionYou:"Ο θάλαμός σας δεν έχει επηρεαστεί ακόμα — αυστηρότερη βιοασφάλεια."
+}};
+
+/* ============ state ============ */
+let lang="en",scen="region",day=30,win="week",timer=null;
+try{lang=localStorage.getItem("fw-lang")||(navigator.language||"").startsWith("el")&&"el"||"en"}catch(e){}
+const t=k=>T[lang][k];
+const fmt=(x,d=1)=>x.toLocaleString(lang==="el"?"el-GR":"en-GB",{minimumFractionDigits:d,maximumFractionDigits:d});
+
+/* ============ simulation ============ */
+const N0=30000,DAYS=42,L=120,W=15,PEERS=37;
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;let x=Math.imul(s^s>>>15,1|s);x=x+Math.imul(x^x>>>7,61|x)^x;return((x^x>>>14)>>>0)/4294967296}}
+function gauss(r){let u=0;while(!u)u=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r())}
+function pois(r,l){if(l>30)return Math.max(0,Math.round(l+Math.sqrt(l)*gauss(r)));const e=Math.exp(-l);let k=0,p=1;do{k++;p*=r()}while(p>e);return k-1}
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const mExp=d=>0.0004+0.0018*Math.exp(-(d-1)/2.5)+0.00002*Math.max(0,d-25);
+const feedG=d=>Math.min(210,12+5*d);
+const tTarget=d=>Math.max(20,33-0.4*(d-1));
+const DRINK=[3,7.5,12],FEED=[5.25,9.75];
+function basePos(r){
+  if(r()<0.4)return[2+r()*116,clamp(DRINK[Math.floor(r()*3)]+gauss(r)*0.7,0.2,14.8)];
+  return[r()*L,r()*W];
+}
+const fanPos=r=>[clamp(L-Math.abs(gauss(r))*6,0.2,119.8),r()*W];
+function patchPos(r,d){const s=2+1.2*(d-23);return[clamp(62+gauss(r)*s*1.6,0.2,119.8),clamp(8+gauss(r)*Math.min(s,4),0.2,14.8)]}
+
+const cache={};
+function gen(s){
+  if(cache[s])return cache[s];
+  const r=rng({normal:11,house:23,region:37}[s]);
+  const pf=[...Array(PEERS)].map(()=>Math.exp(0.25*gauss(r)));
+  const out=[];let alive=N0,cum=0,cumE=0;
+  for(let d=1;d<=DAYS;d++){
+    const m=mExp(d);
+    const peers=pf.map(f=>m*f*Math.exp(0.18*gauss(r))).sort((a,b)=>a-b);
+    const pRaw=pf.map(f=>m*f*Math.exp(0.18*gauss(r)));
+    const base=pois(r,alive*m*0.93*Math.exp(0.15*gauss(r)));
+    let extra=0,kind=null;
+    if(s==="house"&&d>=22){extra=pois(r,alive*0.0012*Math.min(1,(d-21)/4));kind="fan"}
+    if(s==="region"&&d>=23){extra=pois(r,alive*Math.min(0.006,0.0006*Math.pow(1.45,d-23)));kind="patch"}
+    const ev=[];
+    for(let i=0;i<base;i++)ev.push(basePos(r));
+    for(let i=0;i<extra;i++)ev.push(kind==="fan"?fanPos(r):patchPos(r,d));
+    const deaths=base+extra,rate=deaths/alive;
+    let wr=1+0.015*gauss(r),fr=1+0.012*gauss(r),dt=0.3*gauss(r);
+    if(s==="house"&&d>=22){wr+=0.1*Math.min(1,(d-21)/3);fr-=0.03;dt+=2.6*Math.min(1,(d-21)/3)}
+    if(s==="region"&&d>=24){wr-=Math.min(0.18,0.03*(d-23));fr-=Math.min(0.15,0.02*(d-23))}
+    const wE=feedG(d)*1.8;
+    cum+=deaths;cumE+=N0*m*0.93;
+    out.push({d,deaths,rate,peers,pRaw,ev,water:wE*wr,wE,feed:feedG(d)*fr,temp:tTarget(d)+dt,target:tTarget(d),
+      rh:60+3*gauss(r)+(s==="house"&&d>=22?-6:0),cum:cum/N0,cumE:cumE/N0,
+      p10:peers[Math.floor(PEERS*0.1)],p50:peers[Math.floor(PEERS*0.5)],p90:peers[Math.floor(PEERS*0.9)]});
+    alive-=deaths;
+  }
+  // regional: unusual houses per day (41 similar houses)
+  const rr=rng(99+s.length);const dev=[];
+  for(let d=1;d<=DAYS;d++){
+    let n=Math.floor(rr()*2.3);
+    if(s==="region"&&d>=19)n=Math.min(9,1+Math.round((d-18)*0.9));
+    dev.push(n);
+  }
+  out.dev=dev;
+  out.youOut=out.map(o=>o.rate>o.p90);
+  if(s==="house")for(let d=22;d<=DAYS;d++)if(out[d-1].rate>out[d-1].p90)dev[d-1]=Math.min(2,dev[d-1]+1);
+  cache[s]=out;return out;
+}
+const typical=(()=>{const r=rng(5),a=[];for(let i=0;i<4000;i++)a.push(basePos(r));return a})();
+
+/* ============ helpers ============ */
+const NS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e}
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const dark=()=>matchMedia("(prefers-color-scheme: dark)").matches;
+function heat(v){ // v 0..1
+  const stops=dark()?[[32,32,36],[245,200,66],[240,120,40],[217,48,37]]:[[246,246,248],[255,214,92],[245,130,40],[200,30,30]];
+  if(v<=0)return null;
+  const p=clamp(v,0,1)*(stops.length-1),i=Math.min(stops.length-2,Math.floor(p)),f=p-i;
+  const c=stops[i].map((a,j)=>Math.round(a+(stops[i+1][j]-a)*f));return`rgb(${c})`;
+}
+const tip=document.getElementById("tip");
+function showTip(e,txt){tip.textContent=txt;tip.style.opacity=1;const x=Math.min(e.clientX+12,innerWidth-tip.offsetWidth-8);tip.style.left=x+"px";tip.style.top=(e.clientY+14)+"px"}
+function hideTip(){tip.style.opacity=0}
+const lvl={g:0,a:1,r:2},worst=(...a)=>a.reduce((m,x)=>lvl[x]>lvl[m]?x:m,"g");
+function linePath(pts){return pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1)).join("")}
+
+/* ============ status ============ */
+function status(D,d){
+  const o=D[d-1];
+  const rel=o.rate/o.p50;
+  let consec=0;for(let i=d;i>=1&&D[i-1].rate>D[i-1].p90;i--)consec++;
+  const sD=(o.rate>0.005)||rel>=2||consec>=3?"r":(rel>=1.3||consec>=1)?"a":"g";
+  const cr=o.cum/o.cumE,sT=cr>=1.4?"r":cr>=1.15?"a":"g";
+  const wd=(o.water/o.wE-1)*100,sW=wd<=-5?"r":wd>=8?"a":"g";
+  const td=o.temp-o.target,sC=Math.abs(td)>=3?"r":Math.abs(td)>=1.5?"a":"g";
+  return{o,rel,consec,sD,cr,sT,wd,sW,td,sC};
+}
+function windowEvents(D,d,w){const a=w==="today"?d:w==="week"?Math.max(1,d-6):1;let ev=[];for(let i=a;i<=d;i++)ev=ev.concat(D[i-1].ev);return{ev,a,b:d}}
+function pattern(D,d){
+  const {ev}=windowEvents(D,d,"week");
+  if(ev.length<25)return{k:"few",c:"g"};
+  const fan=ev.filter(p=>p[0]>102).length/ev.length;
+  if(fan>0.35)return{k:"fan",c:"r"};
+  const blocks=new Array(12).fill(0);ev.forEach(p=>blocks[Math.min(11,Math.floor(p[0]/10))]++);
+  let mi=0;blocks.forEach((v,i)=>{if(v>blocks[mi])mi=i});
+  if(blocks[mi]/ev.length>0.22&&mi>0&&mi<11)return{k:"patch",c:"r"};
+  const near=ev.filter(p=>DRINK.some(y=>Math.abs(p[1]-y)<1)).length/ev.length;
+  if(near>0.7)return{k:"drink",c:"a"};
+  return{k:"normal",c:"g"};
+}
+
+/* ============ render: banner + tiles ============ */
+function spark(svg,vals,col,ref){
+  svg.innerHTML="";svg.setAttribute("viewBox","0 0 200 38");svg.setAttribute("preserveAspectRatio","none");
+  const all=vals.concat(ref||[]),mn=Math.min(...all),mx=Math.max(...all),sp=mx-mn||1;
+  const y=v=>34-((v-mn)/sp)*30,x=i=>i*(200/(vals.length-1||1));
+  if(ref)el("path",{d:linePath(ref.map((v,i)=>[x(i),y(v)])),fill:"none",stroke:css("--muted"),"stroke-width":1.2,"stroke-dasharray":"3 3","vector-effect":"non-scaling-stroke"},svg);
+  el("path",{d:linePath(vals.map((v,i)=>[x(i),y(v)])),fill:"none",stroke:col,"stroke-width":2.2,"vector-effect":"non-scaling-stroke","stroke-linejoin":"round"},svg);
+}
+function renderTop(D,S){
+  const o=S.o,d=o.d,P=pattern(D,d),dev=D.dev[d-1],regAlert=dev>=4&&(D.dev[d-2]||0)>=4;
+  const tiles=[
+    {k:"tDeaths",s:S.sD,val:`${o.deaths}<span>${t("birds")}</span>`,cmp:`${fmt(o.rate*100,2)}% ${t("ofFlock")} · ${t("vsPeers")(fmt(S.rel,1))}`,sp:"rate",ref:"p50"},
+    {k:"tTotal",s:S.sT,val:`${fmt(o.cum*100,2)}%`,cmp:t("vsExp")(Math.round((S.cr-1)*100)),sp:"cum",ref:"cumE"},
+    {k:"tWater",s:S.sW,val:`${Math.round(o.water)}<span>${t("perK")}</span>`,cmp:t("vsExp")(Math.round(S.wd)),sp:"water",ref:"wE"},
+    {k:"tClimate",s:S.sC,val:`${fmt(o.temp,1)}°C`,cmp:`${t("vsTarget")(fmt(S.td,1))} · ${Math.round(o.rh)}% ${t("rh")}`,sp:"temp",ref:"target"}
+  ];
+  const box=document.getElementById("tiles");box.innerHTML="";
+  const from=Math.max(1,d-6),seg=D.slice(from-1,d);
+  tiles.forEach(tl=>{
+    const c=document.createElement("div");c.className="card tile";
+    c.innerHTML=`<div class="lbl"><i class="bg-${tl.s}"></i>${t(tl.k)}</div><div class="val">${tl.val}</div><div class="cmp c-${tl.s}">${tl.cmp}</div><svg></svg>`;
+    box.appendChild(c);
+    spark(c.querySelector("svg"),seg.map(x=>x[tl.sp]),css(tl.s==="g"?"--fg":tl.s==="a"?"--amber":"--red"),seg.map(x=>x[tl.ref]));
+  });
+  // banner
+  const house=worst(S.sD,S.sT,S.sW,S.sC,P.c==="r"?"r":"g");
+  const b=document.getElementById("banner"),bt=document.getElementById("bannerTxt");
+  const msgs=[];
+  if(S.sD!=="g")msgs.push(t("msgDeaths")(fmt(S.rel,1)));
+  if(S.consec>=2)msgs.push(t("msgDays")(S.consec));
+  if(S.wd<=-5)msgs.push(t("msgWaterDown")(Math.round(-S.wd)));
+  if(S.wd>=8)msgs.push(t("msgWaterUp")(Math.round(S.wd)));
+  if(S.td>=1.5)msgs.push(t("msgHot")(fmt(S.td,1)));
+  if(P.k==="fan")msgs.push(t("msgFan"));
+  if(P.k==="patch")msgs.push(t("msgPatch"));
+  let lv=house,title;
+  if(regAlert){msgs.push(t("msgRegion")(dev));if(house==="g")msgs.push(t("msgRegionYou"));lv="r";title=t("bReg")}
+  else if(house!=="g")title=t("bHouse");
+  if(lv==="g"){title=t("bOk");msgs.length=0;msgs.push(t("bOkD")+d+".")}
+  b.className="banner "+lv;bt.innerHTML=`<b>${title}</b>${msgs.join(" ")}`;
+}
+
+/* ============ render: house heat map ============ */
+function grid(ev,cell){
+  const nx=Math.ceil(L/cell),ny=Math.ceil(W/cell),g=new Array(nx*ny).fill(0);
+  ev.forEach(p=>{g[Math.min(ny-1,Math.floor(p[1]/cell))*nx+Math.min(nx-1,Math.floor(p[0]/cell))]++});
+  return{g,nx,ny};
+}
+function drawHouse(svg,x0,x1,cell,G,max,winInfo,interactive,labels,rel){
+  const mean=G.g.reduce((a,b)=>a+b,0)/G.g.length||1;
+  svg.innerHTML="";
+  const pad=labels?4:1.2,vw=(x1-x0)+pad*2+(x1===L?3:0)+(x0===0?1:0),vx=x0-pad-(x0===0?1:0),top=labels?-4.2:-0.8,vh=W-top+(labels?4.4:0.8);
+  svg.setAttribute("viewBox",`${vx} ${top} ${vw} ${vh}`);
+  const pxm=(svg.clientWidth||svg.parentNode.clientWidth||600)/vw,fs=11.5/pxm,sw=1/pxm;
+  // pseudo-3D wall depth
+  el("rect",{x:x0+0.5,y:0.6,width:x1-x0,height:W,rx:0.4,fill:css("--wall"),opacity:.45},svg);
+  el("rect",{x:x0,y:0,width:x1-x0,height:W,fill:css("--floor"),stroke:css("--wall"),"stroke-width":sw*2},svg);
+  // cells
+  const cg=el("g",{},svg);
+  for(let j=0;j<G.ny;j++)for(let i=0;i<G.nx;i++){
+    const cx=i*cell;if(cx+cell<=x0||cx>=x1)continue;
+    const v=G.g[j*G.nx+i],col=heat(rel?clamp((v/mean-0.6)/3,0,1):max?Math.sqrt(v/max):0);
+    const r=el("rect",{x:cx,y:j*cell,width:Math.min(cell,L-cx),height:Math.min(cell,W-j*cell),fill:col||"transparent"},cg);
+    if(interactive){
+      r.addEventListener("mousemove",e=>showTip(e,t("tip")(v,Math.max(0,Math.round(L-(cx+cell/2))),winInfo.a,winInfo.b)));
+      r.addEventListener("mouseleave",hideTip);
+      r.addEventListener("click",e=>{showTip(e,t("tip")(v,Math.max(0,Math.round(L-(cx+cell/2))),winInfo.a,winInfo.b));setTimeout(hideTip,1800)});
+    }
+  }
+  // equipment lines
+  const eq=el("g",{"pointer-events":"none"},svg);
+  DRINK.forEach(y=>el("line",{x1:Math.max(x0,1),x2:Math.min(x1,119),y1:y,y2:y,stroke:css("--water"),"stroke-width":sw*1.5,opacity:.8},eq));
+  FEED.forEach(y=>el("line",{x1:Math.max(x0,1),x2:Math.min(x1,119),y1:y,y2:y,stroke:css("--feed"),"stroke-width":sw*1.5,"stroke-dasharray":`${sw*5} ${sw*4}`,opacity:.8},eq));
+  el("line",{x1:x0,x2:x1,y1:7.5,y2:7.5,stroke:css("--rail"),"stroke-width":sw*3.5,opacity:.55},eq);
+  // inlets
+  for(let x=6;x<L;x+=6)if(x>=x0&&x<=x1){el("rect",{x:x-0.6,y:-0.35,width:1.2,height:0.35,fill:css("--muted")},eq);el("rect",{x:x-0.6,y:W,width:1.2,height:0.35,fill:css("--muted")},eq)}
+  // pads (x 0-12 on both walls), door at x=0
+  if(x0<12){el("rect",{x:Math.max(x0,0.5),y:-0.9,width:Math.min(12,x1)-Math.max(x0,0.5),height:0.9,fill:css("--water"),opacity:.45},eq);el("rect",{x:Math.max(x0,0.5),y:W,width:Math.min(12,x1)-Math.max(x0,0.5),height:0.9,fill:css("--water"),opacity:.45},eq)}
+  if(x0===0)el("rect",{x:-0.8,y:5.5,width:0.8,height:4,fill:css("--muted")},eq);
+  // fans at x=120
+  if(x1===L)for(let k=0;k<5;k++){const y=1.5+k*3;el("circle",{cx:L+1.2,cy:y,r:1.1,fill:"none",stroke:css("--muted"),"stroke-width":sw*1.5},eq);el("path",{d:`M${L+0.4},${y}L${L+2},${y}M${L+1.2},${y-0.8}L${L+1.2},${y+0.8}`,stroke:css("--muted"),"stroke-width":sw},eq)}
+  if(labels){
+    const lt=(x,y,s,a="middle")=>el("text",{x,y,"font-size":fs,fill:css("--muted"),"text-anchor":a},eq,s);
+    if(x1===L)lt(L+2.4,-1.6,t("fans"),"end");
+    if(x0===0){lt(0,-1.6,t("pads"),"start");lt(0,W+3,t("door"),"start")}
+    // scale ticks every 20 m
+    for(let x=20;x<=L;x+=20)if(x>=x0&&x<=x1)lt(x,W+3,x+" m");
+  }
+}
+function renderHouse(D,d){
+  const box=document.getElementById("house"),wide=box.clientWidth>=720;
+  const cell=wide?1:2.5,info=windowEvents(D,d,win),G=grid(info.ev,cell),max=Math.max(1,...G.g);
+  box.innerHTML="";
+  const parts=wide?[[0,L]]:[[0,60],[60,L]];
+  parts.forEach(([a,b])=>{const div=document.createElement("div");div.className="half";const s=document.createElementNS(NS,"svg");div.appendChild(s);box.appendChild(div);drawHouse(s,a,b,cell,G,max,info,true,true)});
+  // pattern label
+  const P=pattern(D,d),pb=document.getElementById("pattern");
+  const key={few:"pFew",normal:"pNormal",fan:"pFan",drink:"pDrink",patch:"pPatch"}[P.k];
+  pb.innerHTML=`<i class="bg-${P.c}"></i>${t(key)}${P.k!=="few"?` <span>— ${t(key+"D")}</span>`:""}`;
+  // legend
+  const ramp=[0.05,0.35,0.65,1].map(v=>heat(v)).join(",");
+  document.getElementById("hmLegend").innerHTML=`<span class="k">${t("lgLow")} <span class="ramp" style="background:linear-gradient(90deg,${ramp})"></span> ${t("lgHigh")}</span>
+   <span class="k"><b style="background:var(--water)"></b>${t("lgDrink")}</span>
+   <span class="k"><b style="background:var(--feed)"></b>${t("lgFeed")}</span>
+   <span class="k"><b style="height:5px;background:var(--rail);opacity:.6"></b>${t("lgRail")}</span>
+   <span class="k"><b style="width:8px;height:4px;background:var(--muted)"></b>${t("inlets")}</span>`;
+  // minis (2.5 m cells)
+  const wk=windowEvents(D,d,"week"),Gy=grid(wk.ev,2.5),Gp=grid(typical,2.5);
+  drawHouse(document.getElementById("miniYou"),0,L,2.5,Gy,Math.max(1,...Gy.g),wk,false,false,true);
+  drawHouse(document.getElementById("miniPeer"),0,L,2.5,Gp,Math.max(1,...Gp.g),wk,false,false,true);
+}
+
+/* ============ render: benchmark ============ */
+function axes(svg,X,Y,ticksY,fmtY,w,h,m){
+  ticksY.forEach(v=>{el("line",{x1:m.l,x2:w-m.r,y1:Y(v),y2:Y(v),stroke:css("--line")},svg);el("text",{x:m.l-6,y:Y(v)+4,"font-size":11,fill:css("--muted"),"text-anchor":"end"},svg,fmtY(v))});
+  [1,7,14,21,28,35,42].forEach(dd=>el("text",{x:X(dd),y:h-m.b+16,"font-size":11,fill:css("--muted"),"text-anchor":"middle"},svg,dd));
+}
+function renderBench(D,d){
+  document.getElementById("groupLine").innerHTML=t("group")(PEERS);
+  const svg=document.getElementById("bandChart");svg.innerHTML="";
+  const w=640,h=260,m={l:44,r:12,t:12,b:28};
+  const ymax=Math.max(0.0035,...D.slice(0,d).map(o=>o.rate))*1.08;
+  const X=dd=>m.l+(dd-1)/(DAYS-1)*(w-m.l-m.r),Y=v=>h-m.b-(v/ymax)*(h-m.t-m.b);
+  const step=ymax>0.006?0.002:ymax>0.003?0.001:0.0005;const ticks=[];for(let v=0;v<=ymax;v+=step)ticks.push(v);
+  axes(svg,X,Y,ticks,v=>fmt(v*100,2)+"%",w,h,m);
+  el("path",{d:linePath(D.map(o=>[X(o.d),Y(o.p90)]))+linePath(D.slice().reverse().map(o=>[X(o.d),Y(o.p10)])).replace("M","L")+"Z",fill:css("--band")},svg);
+  el("path",{d:linePath(D.map(o=>[X(o.d),Y(o.p50)])),fill:"none",stroke:css("--muted"),"stroke-width":1.5,"stroke-dasharray":"4 3"},svg);
+  const seg=D.slice(0,d);
+  el("path",{d:linePath(seg.map(o=>[X(o.d),Y(o.rate)])),fill:"none",stroke:css("--house"),"stroke-width":2.6,"stroke-linejoin":"round"},svg);
+  seg.forEach(o=>{if(o.rate>o.p90)el("circle",{cx:X(o.d),cy:Y(o.rate),r:3.6,fill:css("--red")},svg)});
+  el("line",{x1:X(d),x2:X(d),y1:m.t,y2:h-m.b,stroke:css("--fg"),"stroke-width":1,opacity:.25},svg);
+  // rank: last 7 days vs peers
+  const a=Math.max(1,d-6),mine=D.slice(a-1,d).reduce((s,o)=>s+o.rate,0);
+  let better=0;for(let p=0;p<PEERS;p++){let s=0;for(let i=a;i<=d;i++)s+=D[i-1].pRaw[p];if(s>mine)better++}
+  const pct=Math.round(better/PEERS*100);
+  const mk=document.getElementById("rankMk");mk.style.left=clamp(pct,3,97)+"%";mk.textContent=t("you");
+  document.getElementById("rankTxt").innerHTML=t("rankTxt")(pct);
+  // ratio chart
+  const rs=document.getElementById("ratioChart");rs.innerHTML="";
+  const w2=400,h2=170,m2={l:36,r:10,t:10,b:26};
+  const X2=dd=>m2.l+(dd-1)/(DAYS-1)*(w2-m2.l-m2.r),Y2=v=>h2-m2.b-((v-1.4)/(0.8))*(h2-m2.t-m2.b);
+  axes(rs,X2,Y2,[1.4,1.6,1.8,2,2.2],v=>fmt(v,1),w2,h2,m2);
+  el("rect",{x:m2.l,width:w2-m2.l-m2.r,y:Y2(1.9),height:Y2(1.7)-Y2(1.9),fill:css("--band")},rs);
+  el("path",{d:linePath(seg.map(o=>[X2(o.d),Y2(clamp(o.water/o.feed,1.4,2.2))])),fill:"none",stroke:css("--water"),"stroke-width":2.4,"stroke-linejoin":"round"},rs);
+}
+
+/* ============ render: region ============ */
+const ZONES=[[0,0],[1,0],[2,0],[3,0],[0,1],[1,1],[2,1],[3,1],[4,1],[1,2],[2,2],[3,2],[4,2],[2,3]];
+const ZH=[3,4,2,3,3,4,3,2,3,4,3,2,3,2]; // houses per zone = 41
+const YOU=6,CLUSTER=[6,5,10,2,7,9,1,11];
+function devZones(D,d){
+  const n=D.dev[d-1],z=new Array(ZONES.length).fill(0);
+  if(scen==="region"&&d>=19){let left=n;for(const i of CLUSTER){const k=Math.min(ZH[i],left,i===YOU&&d<23?0:ZH[i]);z[i]+=k;left-=k;if(!left)break}}
+  else{const mine=scen==="house"&&d>=22&&D[d-1].rate>D[d-1].p90,r=rng(d*7+scen.length);
+    for(let k=0;k<n-(mine?1:0);k++){let i;do{i=Math.floor(r()*ZONES.length)}while(i===YOU);z[i]++}
+    if(mine)z[YOU]++}
+  return z;
+}
+function renderRegion(D,d){
+  const svg=document.getElementById("hexMap");svg.innerHTML="";
+  const R=46,hx=(c,r)=>[70+c*R*1.73+(r%2?R*0.865:0),60+r*R*1.5];
+  const z=devZones(D,d);
+  const cols=[css("--field"),"#f6c453","#f08a2c",css("--red")];
+  ZONES.forEach(([c,r],i)=>{
+    const [cx,cy]=hx(c,r);
+    const pts=[...Array(6)].map((_,k)=>{const a=Math.PI/180*(60*k-30);return[cx+R*0.96*Math.cos(a),cy+R*0.96*Math.sin(a)]});
+    const v=z[i],col=cols[Math.min(3,v)];
+    el("polygon",{points:pts.map(p=>p.join(",")).join(" "),fill:col,stroke:i===YOU?css("--fg"):css("--line"),"stroke-width":i===YOU?3:1.5},svg);
+    el("text",{x:cx,y:cy+2,"font-size":20,"font-weight":700,"text-anchor":"middle",fill:v>=2?"#fff":css("--fg")},svg,v||"·");
+    el("text",{x:cx,y:cy+20,"font-size":11,"text-anchor":"middle",fill:v>=2?"#fff":css("--muted")},svg,`/ ${ZH[i]}`);
+    if(i===YOU)el("text",{x:cx,y:cy-20,"font-size":12,"font-weight":700,"text-anchor":"middle",fill:v>=2?"#fff":css("--fg")},svg,"★ "+t("you"));
+  });
+  document.getElementById("hexLegend").innerHTML=t("hexLg").map((s,i)=>`<span class="k"><b style="width:14px;height:14px;border-radius:4px;background:${cols[i]}"></b>${s}</span>`).join("");
+  // timeline
+  const tl=document.getElementById("timeline");tl.innerHTML="";
+  const w=400,h=190,m={l:30,r:8,t:10,b:26},ymax=10;
+  const X=dd=>m.l+(dd-1)/(DAYS-1)*(w-m.l-m.r),Y=v=>h-m.b-(v/ymax)*(h-m.t-m.b),bw=(w-m.l-m.r)/DAYS*0.75;
+  axes(tl,X,Y,[0,2,4,6,8,10],v=>v,w,h,m);
+  for(let dd=1;dd<=d;dd++){const v=D.dev[dd-1];el("rect",{x:X(dd)-bw/2,y:Y(v),width:bw,height:Y(0)-Y(v),rx:1.5,fill:v>=4?css("--red"):v>=2?css("--amber"):css("--muted")},tl)}
+  el("line",{x1:m.l,x2:w-m.r,y1:Y(4),y2:Y(4),stroke:css("--red"),"stroke-width":1.5,"stroke-dasharray":"5 4"},tl);
+  // alert card
+  const n=D.dev[d-1],al=document.getElementById("regAlert");
+  let start=d;while(start>1&&D.dev[start-2]>=3)start--;
+  const me=scen==="region"&&D[d-1].rate>D[d-1].p90;
+  if(n>=4&&(D.dev[d-2]||0)>=4){al.className="alert r";al.innerHTML=`<b>🔴 ${t("regWarn")}</b>${t("regWarnD")(n,start||d,me)}`}
+  else if(n>=3){al.className="alert a";al.innerHTML=`<b>🟠 ${t("regPre")}</b>${t("regPreD")(n)}`}
+  else{al.className="alert g";al.innerHTML=`<b>🟢 ${t("regOk")}</b>${t("regOkD")(n)}`}
+}
+
+/* ============ render: causes ============ */
+function renderCauses(D,d){
+  const box=document.getElementById("causes"),v=document.getElementById("verdict");
+  const n=D.dev[d-1];
+  const regional=scen==="region"&&n>=4&&(D.dev[d-2]||0)>=4;
+  const houseP=scen==="house"&&pattern(D,d).k==="fan";
+  let cards,verdict;
+  const card=(ic,title,tag,txt,share,col,dim)=>`<div class="card cause${dim?" dim":""}"><div class="ic">${ic}</div><h3>${title}</h3><div class="v c-${col}">${tag}</div><div class="meter"><div style="width:${Math.round(share*100)}%;background:var(--${col==="g"?"muted":col==="a"?"amber":"red"})"></div></div><div class="note" style="margin:0">${txt}</div></div>`;
+  if(regional){
+    const k=Math.max(1,Math.round(n*0.85)),f=Math.round(n*0.3);
+    cards=[card("🐣",t("cChick"),t("likely"),t("cChickR")(k,n),k/n,"r"),card("🌾",t("cFeed"),t("unlikely"),t("cFeedR")(f,n),f/n,"g"),card("🏠",t("cHouse"),t("notCause"),t("cHouseR"),0.12,"g")];
+    verdict=t("vChick");
+  }else if(houseP){
+    cards=[card("🐣",t("cChick"),t("notCause"),t("cChickH"),0.02,"g"),card("🌾",t("cFeed"),t("notCause"),t("cFeedH"),0.02,"g"),card("🏠",t("cHouse"),t("likely"),t("cHouseH"),0.9,"r")];
+    verdict=t("vHouse");
+  }else{
+    cards=[card("🐣",t("cChick"),"—",t("cNone"),0,"g",1),card("🌾",t("cFeed"),"—",t("cNone"),0,"g",1),card("🏠",t("cHouse"),"—",t("cNone"),0,"g",1)];
+    verdict=t("vNone");
+  }
+  box.innerHTML=cards.join("");v.innerHTML=verdict;
+}
+
+/* ============ main ============ */
+function applyText(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-t]").forEach(e=>{const v=t(e.dataset.t);if(typeof v==="string")e.textContent=v});
+  document.querySelectorAll(".lang button").forEach(b=>b.classList.toggle("on",b.dataset.lang===lang));
+}
+function render(){
+  const D=gen(scen),S=status(D,day);
+  document.getElementById("dayLbl").textContent=`${t("day")} ${day} / 42`;
+  document.querySelectorAll("#scen button").forEach(b=>b.classList.toggle("on",b.dataset.s===scen));
+  document.querySelectorAll("#win button").forEach(b=>b.classList.toggle("on",b.dataset.w===win));
+  renderTop(D,S);renderHouse(D,day);renderBench(D,day);renderRegion(D,day);renderCauses(D,day);
+}
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{lang=b.dataset.lang;try{localStorage.setItem("fw-lang",lang)}catch(e){}applyText();render()});
+document.querySelectorAll("#scen button").forEach(b=>b.onclick=()=>{scen=b.dataset.s;day={normal:30,house:30,region:27}[b.dataset.s];document.getElementById("day").value=day;render()});
+document.querySelectorAll("#win button").forEach(b=>b.onclick=()=>{win=b.dataset.w;render()});
+const slider=document.getElementById("day");
+slider.oninput=()=>{day=+slider.value;render()};
+const play=document.getElementById("play");
+play.onclick=()=>{
+  if(timer){clearInterval(timer);timer=null;play.textContent="▶";return}
+  if(day>=42)day=1;play.textContent="❚❚";
+  timer=setInterval(()=>{day++;slider.value=day;render();if(day>=42){clearInterval(timer);timer=null;play.textContent="▶"}},260);
+};
+let rz;addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(render,150)});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
+document.getElementById("yr").textContent=new Date().getFullYear();
+day=27;slider.value=day;
+applyText();render();
+</script>
+</body>
+</html>
