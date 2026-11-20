@@ -273,7 +273,7 @@ en:{
  mkDay:(d)=>`Day ${d}`,mkCum:(d)=>d===1?`Day 1`:`Days 1–${d}`,birdsW:"birds",birdsC:"birds in total",
  hmHint:"Left: birds picked up on the selected day. Right: all birds since placement. Move the day slider at the top to replay the flock.",
  daysTxt:(a,b)=>a===b?`day ${a}`:`days ${a}–${b}`,
- lgCount:"Birds per 2 × 2 m spot:",lgNone:"none",
+ lgCount:"Birds per tile (about 2 × 2 m):",lgNone:"none",
  tipYou:(n,m,d)=>`${n} bird${n==1?"":"s"} · ${m} m from fans · ${d}`,
  lgLow:"few",lgHigh:"many",lgDrink:"drinker lines",lgFeed:"feeder lines",lgRail:"Railo rail",
  fans:"Tunnel fans",pads:"Cooling pads",door:"Door",inlets:"side inlets",
@@ -346,7 +346,7 @@ el:{
  mkDay:(d)=>`Ημέρα ${d}`,mkCum:(d)=>d===1?`Ημέρα 1`:`Ημέρες 1–${d}`,birdsW:"πουλιά",birdsC:"πουλιά συνολικά",
  hmHint:"Αριστερά: πουλιά που συλλέχθηκαν την επιλεγμένη ημέρα. Δεξιά: όλα τα πουλιά από την τοποθέτηση. Μετακινήστε τη μπάρα ημερών επάνω για να δείτε όλη την εκτροφή.",
  daysTxt:(a,b)=>a===b?`ημέρα ${a}`:`ημέρες ${a}–${b}`,
- lgCount:"Πουλιά ανά σημείο 2 × 2 m:",lgNone:"κανένα",
+ lgCount:"Πουλιά ανά πλακίδιο (περίπου 2 × 2 m):",lgNone:"κανένα",
  tipYou:(n,m,d)=>`${n} πουλ${n==1?"ί":"ιά"} · ${m} m από ανεμιστήρες · ${d}`,
  lgLow:"λίγα",lgHigh:"πολλά",lgDrink:"γραμμές ποτίστρας",lgFeed:"γραμμές ταΐστρας",lgRail:"ράγα Railo",
  fans:"Ανεμιστήρες",pads:"Δροσιστικά πάνελ",door:"Πόρτα",inlets:"πλευρικά ανοίγματα",
@@ -562,9 +562,10 @@ function renderTop(D,S){
 
 /* ============ render: house heat map ============ */
 function grid(ev,cell){
-  const nx=Math.ceil(L/cell),ny=Math.ceil(W/cell),g=new Array(nx*ny).fill(0);
-  ev.forEach(p=>{g[Math.min(ny-1,Math.floor(p[1]/cell))*nx+Math.min(nx-1,Math.floor(p[0]/cell))]++});
-  return{g,nx,ny};
+  // equal tiles: length split into 2 m rows, width split evenly (15 m -> 8 tiles of 1.875 m)
+  const nx=Math.round(L/cell),ny=Math.round(W/cell),cx=L/nx,cy=W/ny,g=new Array(nx*ny).fill(0);
+  ev.forEach(p=>{g[Math.min(ny-1,Math.floor(p[1]/cy))*nx+Math.min(nx-1,Math.floor(p[0]/cx))]++});
+  return{g,nx,ny,cx,cy};
 }
 function drawHouse(svg,cell,G,colorFn,tipFn,labels,hPx){
   // vertical plan: door/pads at top, tunnel fans at bottom. House coords (x along length, y across) -> screen (W-y, x)
@@ -581,9 +582,9 @@ function drawHouse(svg,cell,G,colorFn,tipFn,labels,hPx){
   const g=el("g",{transform:`matrix(0,1,-1,0,${W},0)`},svg);
   const ins=0.2,tile=css("--tile");
   for(let j=0;j<G.ny;j++)for(let i=0;i<G.nx;i++){
-    const k=j*G.nx+i,cx=i*cell,col=colorFn(k);
-    const r=el("rect",{x:cx+ins,y:j*cell+ins,width:Math.min(cell,L-cx)-2*ins,height:Math.min(cell,W-j*cell)-2*ins,rx:0.42,fill:col||tile},g);
-    const msg=()=>tipFn(k,Math.max(0,Math.round(L-(cx+cell/2))));
+    const k=j*G.nx+i,cx=i*G.cx,col=colorFn(k);
+    const r=el("rect",{x:cx+ins,y:j*G.cy+ins,width:G.cx-2*ins,height:G.cy-2*ins,rx:0.42,fill:col||tile},g);
+    const msg=()=>tipFn(k,Math.max(0,Math.round(L-(cx+G.cx/2))));
     r.addEventListener("mousemove",e=>showTip(e,msg()));
     r.addEventListener("mouseleave",hideTip);
     r.addEventListener("click",e=>{showTip(e,msg());setTimeout(hideTip,1800)});
