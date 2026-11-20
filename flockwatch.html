@@ -698,7 +698,7 @@ function renderRegion(D,d){
   ZONES.forEach(([c,r],i)=>{
     const [cx,cy]=hx(c,r),v=z[i],col=cols[Math.min(3,v)],hot=v>=2;
     const g=el("g",{filter:"url(#hxSh)"},svg);
-    if(i===YOU)el("polygon",{points:hexPts(cx,cy,R*0.74),fill:css("--you"),stroke:css("--you"),"stroke-width":19,"stroke-linejoin":"round"},g);
+    if(i===YOU)el("polygon",{points:hexPts(cx,cy,R*0.74),fill:col,stroke:col,"stroke-width":30,"stroke-linejoin":"round"},g);
     el("polygon",{points:hexPts(cx,cy,R*0.74),fill:col,stroke:col,"stroke-width":10,"stroke-linejoin":"round"},g);
     el("polygon",{points:hexPts(cx,cy,R*0.74),fill:"url(#hxGl)",stroke:"none"},g);
     el("text",{x:cx,y:cy+5,"font-size":24,"font-weight":650,"letter-spacing":"-.02em","text-anchor":"middle",fill:hot?"#fff":css("--fg")},svg,String(v));
@@ -709,7 +709,7 @@ function renderRegion(D,d){
     const lab=t("you").toUpperCase(),pw=lab.length*7.2+18;
     el("rect",{x:cx-pw/2,y:cy-R-4,width:pw,height:18,rx:9,fill:css("--you")},svg);
     el("text",{x:cx,y:cy-R+8.5,"font-size":10,"font-weight":700,"letter-spacing":".05em","text-anchor":"middle",fill:"#fff"},svg,lab);}
-  document.getElementById("hexLegend").innerHTML=t("hexLg").map((s,i)=>`<span class="k"><b style="width:14px;height:14px;border-radius:5px;background:${cols[i]}"></b>${s}</span>`).join("")+`<span class="k"><b style="width:14px;height:14px;border-radius:5px;background:transparent;border:3px solid var(--you);box-sizing:border-box"></b>${t("yourArea")}</span>`;
+  document.getElementById("hexLegend").innerHTML=t("hexLg").map((s,i)=>`<span class="k"><b style="width:14px;height:14px;border-radius:5px;background:${cols[i]}"></b>${s}</span>`).join("")+`<span class="k"><b style="width:auto;height:auto;border-radius:999px;background:var(--you);color:#fff;font-size:.62rem;font-weight:700;letter-spacing:.05em;padding:1px 6px">${t("you").toUpperCase()}</b>${t("yourArea")}</span>`;
   // timeline
   const tl=document.getElementById("timeline");tl.innerHTML="";
   const h=190,w=fitW(tl,400,h),m={l:30,r:8,t:10,b:26},ymax=10;
