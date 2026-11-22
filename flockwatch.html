@@ -1,12 +1,22 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Google tag (Google Analytics: railo.gr) -->
-  <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TT2R6QJW"></script>
+  <!-- Google tag (Google Analytics: railo.gr). Open any page with ?notrack to stop tracking this browser, ?track to resume. -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+    (function(){
+      var k='railo-notrack',q=location.search,off=false,msg='';
+      try{
+        if(/[?&]notrack(=|&|$)/.test(q)){localStorage.setItem(k,'1');msg='Analytics off for this browser';}
+        if(/[?&]track(=|&|$)/.test(q)){localStorage.removeItem(k);msg='Analytics on for this browser';}
+        off=localStorage.getItem(k)==='1';
+      }catch(e){}
+      window.dataLayer=window.dataLayer||[];
+      window.gtag=function(){dataLayer.push(arguments);};
+      if(msg)addEventListener('DOMContentLoaded',function(){var d=document.createElement('div');d.textContent=msg;d.style.cssText='position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:99;background:#1d1d1f;color:#fff;font:600 14px system-ui,sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.2)';document.body.appendChild(d);setTimeout(function(){d.remove()},3500);});
+      if(off){window['ga-disable-G-G0LBT80WSS']=true;return;}
+      gtag('js',new Date());
+      var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=GTM-TT2R6QJW';document.head.appendChild(s);
+    })();
   </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
