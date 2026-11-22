@@ -1,124 +1,61 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Google tag (Google Analytics: railo.gr). Open any page with ?notrack to stop tracking this browser, ?track to resume. -->
-  <script>
-    (function(){
-      var k='railo-notrack',q=location.search,off=false,msg='';
-      try{
-        if(/[?&]notrack(=|&|$)/.test(q)){localStorage.setItem(k,'1');msg='Analytics off for this browser';}
-        if(/[?&]track(=|&|$)/.test(q)){localStorage.removeItem(k);msg='Analytics on for this browser';}
-        off=localStorage.getItem(k)==='1';
-      }catch(e){}
-      window.dataLayer=window.dataLayer||[];
-      window.gtag=function(){dataLayer.push(arguments);};
-      if(msg)addEventListener('DOMContentLoaded',function(){var d=document.createElement('div');d.textContent=msg;d.style.cssText='position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:99;background:#1d1d1f;color:#fff;font:600 14px system-ui,sans-serif;padding:10px 16px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.2)';document.body.appendChild(d);setTimeout(function(){d.remove()},3500);});
-      if(off){window['ga-disable-G-G0LBT80WSS']=true;return;}
-      gtag('js',new Date());
-      var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=GTM-TT2R6QJW';document.head.appendChild(s);
-    })();
-  </script>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>Railo</title>
-  <meta name="description" content="Railo — rail robotics for poultry houses.">
-  <style>
-    :root{
-      --bg:#ffffff; --fg:#1d1d1f; --muted:#6e6e73; --line:#e3e3e6;
-      --field:#f5f5f7; --accent:#1d1d1f; --accent-fg:#ffffff;
-    }
-    @media (prefers-color-scheme:dark){
-      :root{
-        --bg:#0f0f10; --fg:#f2f2f2; --muted:#9a9aa0; --line:#2a2a2d;
-        --field:#1a1a1c; --accent:#f2f2f2; --accent-fg:#0f0f10;
-      }
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0}
-    body{
-      background:var(--bg); color:var(--fg);
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-      -webkit-font-smoothing:antialiased;
-      display:flex; flex-direction:column; align-items:center;
-      padding:72px 16px 56px; gap:56px; min-height:100vh;
-    }
-    header{text-align:center}
-    h1{font-weight:600; letter-spacing:.02em; font-size:clamp(2.4rem,7vw,3.4rem); margin:0}
-    .tag{color:var(--muted); margin:8px 0 0; font-size:1rem}
-
-    .video{
-      width:min(360px,100%); aspect-ratio:9/16;
-      border-radius:22px; overflow:hidden;
-      background:#000; box-shadow:0 20px 50px rgba(0,0,0,.18);
-    }
-    .video iframe{width:100%; height:100%; border:0; display:block}
-
-    section.contact{width:min(440px,100%)}
-    h2{font-weight:600; font-size:1.25rem; margin:0 0 4px; text-align:center}
-    .sub{color:var(--muted); text-align:center; margin:0 0 24px; font-size:.95rem}
-    form{display:flex; flex-direction:column; gap:12px}
-    input,textarea{
-      font:inherit; color:var(--fg); background:var(--field);
-      border:1px solid transparent; border-radius:12px;
-      padding:13px 14px; width:100%; outline:none;
-      transition:border-color .15s, background .15s;
-    }
-    input:focus,textarea:focus{border-color:var(--line); background:var(--bg)}
-    textarea{min-height:130px; resize:vertical}
-    button{
-      font:inherit; font-weight:600; cursor:pointer;
-      background:var(--accent); color:var(--accent-fg);
-      border:0; border-radius:12px; padding:13px; margin-top:4px;
-      transition:opacity .15s;
-    }
-    button:hover{opacity:.85}
-    .hp{position:absolute; left:-9999px}
-    .sent{display:none; text-align:center; color:var(--muted); padding:24px 0}
-    .is-sent .sent{display:block}
-    .is-sent form{display:none}
-
-    footer{color:var(--muted); font-size:.85rem; margin-top:auto}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Railo</title>
+<style>
+:root{--bg:#fff;--fg:#1d1d1f;--muted:#6e6e73;--field:#f5f5f7;--line:#e3e3e6;--accent:#1d1d1f;--accent-fg:#fff;--red:#d93025}
+@media (prefers-color-scheme:dark){:root{--bg:#0f0f10;--fg:#f2f2f2;--muted:#9a9aa0;--field:#1a1a1c;--line:#2a2a2d;--accent:#f2f2f2;--accent-fg:#0f0f10;--red:#ff6b5e}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+main{width:min(340px,100%);text-align:center;opacity:0;transition:opacity .2s}
+main.show{opacity:1}
+h1{font-weight:600;letter-spacing:.02em;font-size:2.4rem;margin:0}
+p{color:var(--muted);margin:8px 0 28px}
+form{display:flex;flex-direction:column;gap:10px}
+input{font:inherit;color:var(--fg);background:var(--field);border:1px solid transparent;border-radius:12px;padding:13px 14px;width:100%;outline:none;text-align:center}
+input:focus{border-color:var(--line);background:var(--bg)}
+button{font:inherit;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-fg);border:0;border-radius:12px;padding:13px}
+button:disabled{opacity:.6;cursor:default}
+.err{color:var(--red);font-size:.9rem;min-height:1.3em;margin:4px 0 0}
+</style>
 </head>
 <body>
-  <header>
-    <h1>Railo</h1>
-    <p class="tag">Rail robotics for poultry houses</p>
-  </header>
-
-  <div class="video">
-    <iframe
-      src="https://www.youtube-nocookie.com/embed/x0T1vV2Z3_A?rel=0&modestbranding=1&playsinline=1"
-      title="Railo Demo" loading="lazy"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowfullscreen></iframe>
-  </div>
-
-  <section class="contact" id="contact">
-    <h2>Get in touch</h2>
-    <p class="sub">We'll reply to your email.</p>
-    <form action="https://formsubmit.co/hello@railo.gr" method="POST">
-      <input type="text" name="name" placeholder="Name" required autocomplete="name">
-      <input type="email" name="email" placeholder="Email" required autocomplete="email">
-      <textarea name="message" placeholder="Message" required></textarea>
-      <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <input type="hidden" name="_subject" value="New message from railo.gr">
-      <input type="hidden" name="_captcha" value="true">
-      <input type="hidden" name="_template" value="table">
-      <input type="hidden" name="_next" value="https://railo.gr/?sent=1#contact">
-      <button type="submit">Send</button>
-    </form>
-    <p class="sent">Thanks — your message has been sent.</p>
-  </section>
-
-  <footer>© <span id="y"></span> Railo</footer>
-
-  <script>
-    document.getElementById('y').textContent = new Date().getFullYear();
-    if (new URLSearchParams(location.search).has('sent')) {
-      document.getElementById('contact').classList.add('is-sent');
-    }
-  </script>
+<main id="gate">
+  <h1>Railo</h1>
+  <p>Enter the password to continue.</p>
+  <form id="f">
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password" required autofocus>
+    <button id="go" type="submit">Unlock</button>
+    <div class="err" id="err"></div>
+  </form>
+</main>
+<script>
+(()=>{ // wrapped so no names leak into the unlocked page
+const P={"s": "HXUA2pxMRBnBWGFSQebzgw==", "i": "nuMIFJy6AfraRL7T", "n": 310000, "c": "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"};
+const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function open_(pw){
+  const km=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
+  const key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:b(P.s),iterations:P.n,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["decrypt"]);
+  return new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:b(P.i)},key,b(P.c)));
+}
+function show(html){document.open();document.write(html);document.close();}
+const K="railo-pw",gate=document.getElementById("gate");
+(async()=>{
+  let saved=null;try{saved=localStorage.getItem(K)}catch(e){}
+  if(saved){try{show(await open_(saved));return}catch(e){try{localStorage.removeItem(K)}catch(_){}}}
+  gate.classList.add("show");document.getElementById("pw").focus();
+})();
+document.getElementById("f").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const pw=document.getElementById("pw").value,go=document.getElementById("go"),err=document.getElementById("err");
+  go.disabled=true;err.textContent="";
+  try{const html=await open_(pw);try{localStorage.setItem(K,pw)}catch(_){}show(html)}
+  catch(x){err.textContent="Wrong password";go.disabled=false;document.getElementById("pw").select()}
+});
+})();
+</script>
 </body>
 </html>
